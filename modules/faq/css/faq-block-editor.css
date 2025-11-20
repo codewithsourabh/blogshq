@@ -1,0 +1,22 @@
+.blogshq-faq-block-editor {
+    padding: 1em;
+    border: 1px dashed #ccc;
+}
+
+.faq-item-editor {
+    margin-bottom: 1.5em;
+    padding: 1em;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    background: #f9fafb;
+}
+
+.faq-item-editor .faq-question {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+}
+
+.faq-item-editor .faq-answer {
+    margin-bottom: 1em;
+}

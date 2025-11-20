@@ -1,0 +1,3 @@
+path: wp
+require:
+  - wp-content/plugins/blogshq-admin-toolkit/cli/commands.php

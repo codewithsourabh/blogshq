@@ -1,0 +1,15 @@
+{
+  "name": "blogshq-admin-toolkit",
+  "version": "1.1.0",
+  "description": "BlogsHQ Admin Toolkit",
+  "scripts": {
+   "build": "wp-scripts build --webpack-src-dir=blocks/faq/src",
+"start": "wp-scripts start --webpack-src-dir=blocks/faq/src", 
+    "lint:js": "wp-scripts lint-js",
+    "format": "prettier --write '**/*.{js,jsx,json,md}'"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^26.0.0",
+    "prettier": "^3.0.0"
+  }
+}

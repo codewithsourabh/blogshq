@@ -1,0 +1,323 @@
+/**
+ * BlogsHQ Admin Styles
+ *
+ * @package BlogsHQ
+ * @since 1.0.0
+ */
+
+/* ========================================================================
+   Admin Wrapper
+   ======================================================================== */
+
+.blogshq-admin-wrap {
+	max-width: 1200px;
+}
+
+.blogshq-admin-wrap h1 {
+	margin-bottom: 20px;
+}
+
+/* ========================================================================
+   Tab Navigation
+   ======================================================================== */
+
+.blogshq-admin-wrap .nav-tab-wrapper {
+	margin-bottom: 20px;
+	border-bottom: 1px solid #ccc;
+}
+
+.blogshq-admin-wrap .nav-tab {
+	font-size: 14px;
+	padding: 10px 15px;
+}
+
+/* ========================================================================
+   Tab Content
+   ======================================================================== */
+
+.blogshq-tab-content {
+	background: #fff;
+	padding: 20px;
+	border: 1px solid #ccc;
+	border-top: none;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.blogshq-settings-section {
+	max-width: 100%;
+}
+
+.blogshq-settings-section h2 {
+	margin-top: 0;
+	padding-top: 0;
+	font-size: 23px;
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+.blogshq-settings-section h3 {
+	font-size: 18px;
+	font-weight: 600;
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+
+/* ========================================================================
+   Logos Settings
+   ======================================================================== */
+
+.blogshq-logos-settings table.widefat {
+	border: 1px solid #ccc;
+	margin-top: 20px;
+}
+
+.blogshq-logos-settings table.widefat th {
+	background: #f9f9f9;
+	font-weight: 600;
+}
+
+.blogshq-logos-settings table.widefat td {
+	vertical-align: middle;
+}
+
+.blogshq-logos-settings table.widefat td input[type="url"] {
+	width: 100%;
+	max-width: 100%;
+}
+
+.blogshq-logos-settings table.widefat td code {
+	background: #f0f0f0;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 12px;
+}
+
+/* ========================================================================
+   TOC Settings
+   ======================================================================== */
+
+.blogshq-toc-settings .form-table {
+	margin-top: 20px;
+}
+
+.blogshq-toc-settings .form-table th {
+	width: 250px;
+	padding: 20px 10px 20px 0;
+	vertical-align: top;
+}
+
+.blogshq-toc-settings .form-table td {
+	padding: 20px 10px;
+}
+
+.blogshq-toc-settings .form-table input[type="checkbox"] {
+	margin-right: 5px;
+}
+
+.blogshq-toc-settings .form-table label {
+	display: inline-flex;
+	align-items: center;
+}
+
+.blogshq-toc-settings .form-table .description {
+	display: block;
+	margin-top: 8px;
+	color: #646970;
+	font-style: italic;
+}
+
+/* Color Picker */
+.blogshq-color-picker {
+	max-width: 100px;
+}
+
+/* ========================================================================
+   Info Boxes
+   ======================================================================== */
+
+.blogshq-info-box {
+	background: #f9f9f9;
+	border-left: 4px solid #2E62E9;
+	padding: 15px 20px;
+	margin-top: 20px;
+	border-radius: 0 4px 4px 0;
+}
+
+.blogshq-info-box h3 {
+	margin-top: 0;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.blogshq-info-box p {
+	margin: 10px 0;
+}
+
+.blogshq-info-box ul,
+.blogshq-info-box ol {
+	margin: 10px 0 10px 20px;
+}
+
+.blogshq-info-box li {
+	margin: 5px 0;
+	line-height: 1.6;
+}
+
+.blogshq-info-box code {
+	background: #fff;
+	border: 1px solid #ddd;
+	padding: 8px 12px;
+	display: inline-block;
+	border-radius: 3px;
+	font-size: 13px;
+	font-family: Monaco, Consolas, "Courier New", monospace;
+}
+
+/* ========================================================================
+   Shortcode Box
+   ======================================================================== */
+
+.blogshq-shortcode-box {
+	background: #fff;
+	border: 1px solid #ddd;
+	padding: 15px;
+	margin: 15px 0;
+	border-radius: 4px;
+	text-align: center;
+}
+
+.blogshq-shortcode-box code {
+	font-size: 16px;
+	font-weight: 600;
+	color: #2E62E9;
+	background: #f0f4ff;
+	padding: 10px 20px;
+	border-radius: 4px;
+	display: inline-block;
+}
+
+/* ========================================================================
+   Buttons
+   ======================================================================== */
+
+.blogshq-settings-section .submit {
+	margin-top: 20px;
+	padding-top: 10px;
+	border-top: 1px solid #f0f0f0;
+}
+
+.blogshq-settings-section .button-primary {
+	background: #2E62E9;
+	border-color: #1e52d9;
+	text-shadow: none;
+	box-shadow: none;
+	padding: 8px 20px;
+	height: auto;
+	font-size: 14px;
+}
+
+.blogshq-settings-section .button-primary:hover,
+.blogshq-settings-section .button-primary:focus {
+	background: #1e52d9;
+	border-color: #1642c9;
+}
+
+/* ========================================================================
+   Notices
+   ======================================================================== */
+
+.blogshq-admin-wrap .notice {
+	margin: 15px 0;
+}
+
+.blogshq-admin-wrap .notice p {
+	margin: 0.5em 0;
+}
+
+/* ========================================================================
+   Responsive Styles
+   ======================================================================== */
+
+@media screen and (max-width: 782px) {
+	.blogshq-logos-settings table.widefat th,
+	.blogshq-logos-settings table.widefat td {
+		display: table-cell;
+		padding: 10px;
+	}
+
+	.blogshq-toc-settings .form-table th {
+		width: 100%;
+		display: block;
+		padding: 10px 0;
+	}
+
+	.blogshq-toc-settings .form-table td {
+		display: block;
+		padding: 10px 0 20px 0;
+	}
+
+	.blogshq-admin-wrap .nav-tab {
+		font-size: 12px;
+		padding: 8px 10px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	.blogshq-logos-settings table.widefat thead {
+		display: none;
+	}
+
+	.blogshq-logos-settings table.widefat tr {
+		display: block;
+		margin-bottom: 20px;
+		border: 1px solid #ddd;
+	}
+
+	.blogshq-logos-settings table.widefat td {
+		display: block;
+		text-align: left;
+		padding: 10px;
+		border-bottom: 1px solid #f0f0f0;
+	}
+
+	.blogshq-logos-settings table.widefat td:last-child {
+		border-bottom: none;
+	}
+
+	.blogshq-logos-settings table.widefat td::before {
+		content: attr(data-label);
+		font-weight: 600;
+		display: block;
+		margin-bottom: 5px;
+	}
+}
+
+/* ========================================================================
+   Loading States
+   ======================================================================== */
+
+.blogshq-loading {
+	opacity: 0.5;
+	pointer-events: none;
+	position: relative;
+}
+
+.blogshq-loading::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20px;
+	height: 20px;
+	margin: -10px 0 0 -10px;
+	border: 2px solid #2E62E9;
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: blogshq-spin 0.6s linear infinite;
+}
+
+@keyframes blogshq-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

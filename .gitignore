@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build files
+*.log
+*.zip
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# WordPress
+wp-config.php
+.htaccess
+
+# Environment
+.env
+.env.local
+
+# Composer
+composer.lock
+
+# NPM
+package-lock.json
+
+# Testing
+phpunit.xml
+/tests/coverage/
