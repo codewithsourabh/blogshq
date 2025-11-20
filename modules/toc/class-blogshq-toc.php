@@ -46,9 +46,6 @@ class BlogsHQ_TOC {
 
 		// Enqueue link icon script
 		add_action( 'wp_footer', array( $this, 'enqueue_link_icon_script' ) );
-
-		// Enqueue frontend styles
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_styles' ) );
 	}
 
 	/**
@@ -67,16 +64,6 @@ class BlogsHQ_TOC {
 		// Or if it's a post (TOC auto-inserts)
 		$is_post = is_singular( 'post' );
 		
-		if ( $has_logo || $has_toc || $has_ai || $is_post ) {
-			$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
-			wp_enqueue_style(
-				'blogshq-frontend',
-				BLOGSHQ_PLUGIN_URL . "assets/css/frontend{$suffix}.css",
-				array(),
-				BLOGSHQ_VERSION,
-				'all'
-			);
-		}
 	}
 
 	/**

@@ -3,13 +3,43 @@
   "version": "1.1.0",
   "description": "BlogsHQ Admin Toolkit",
   "scripts": {
-   "build": "wp-scripts build --webpack-src-dir=blocks/faq/src",
-"start": "wp-scripts start --webpack-src-dir=blocks/faq/src", 
+"minify:frontend-css": "postcss assets/css/frontend.css --use cssnano --output assets/css/frontend.min.css --no-map",
+    "minify:admin-css": "postcss admin/css/admin.css --use cssnano --output admin/css/admin.min.css --no-map",
+    "minify:link-icon-js": "terser assets/js/link-icon.js -c -m -o assets/js/link-icon.min.js",
+    "minify:admin-js": "terser admin/js/admin.js -c -m -o admin/js/admin.min.js",
+    "minify:ai-share-js": "terser assets/js/ai-share.js -c -m -o assets/js/ai-share.min.js",
+    "minify:css": "npm-run-all minify:frontend-css minify:admin-css",
+    "minify:js": "npm-run-all minify:link-icon-js minify:admin-js minify:ai-share-js",
+    "minify": "npm-run-all minify:css minify:js",
+    "watch": "npm-run-all --parallel watch:css watch:js",
+    "watch:css": "postcss assets/css/frontend.css --use cssnano --output assets/css/frontend.min.css --no-map --watch",
+    "watch:js": "npm-run-all --parallel watch:link-icon watch:admin watch:ai-share",
+    "watch:link-icon": "terser assets/js/link-icon.js -c -m -o assets/js/link-icon.min.js --watch",
+    "watch:admin": "terser admin/js/admin.js -c -m -o admin/js/admin.min.js --watch",
+    "watch:ai-share": "terser assets/js/ai-share.js -c -m -o assets/js/ai-share.min.js --watch",
+    "build": "wp-scripts build --webpack-src-dir=blocks/faq/src",
+    "start": "wp-scripts start --webpack-src-dir=blocks/faq/src",
     "lint:js": "wp-scripts lint-js",
     "format": "prettier --write '**/*.{js,jsx,json,md}'"
   },
   "devDependencies": {
     "@wordpress/scripts": "^26.0.0",
     "prettier": "^3.0.0"
-  }
+  },
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codewithsourabh/blogshq.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/codewithsourabh/blogshq/issues"
+  },
+  "homepage": "https://github.com/codewithsourabh/blogshq#readme"
 }

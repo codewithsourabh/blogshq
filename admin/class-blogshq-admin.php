@@ -60,7 +60,7 @@ class BlogsHQ_Admin {
 
 		wp_enqueue_style(
 			$this->plugin_name,
-			BLOGSHQ_PLUGIN_URL . 'admin/css/admin.css',
+			BLOGSHQ_PLUGIN_URL . 'admin/css/admin.min.css',
 			array(),
 			$this->version,
 			'all'
@@ -83,7 +83,7 @@ class BlogsHQ_Admin {
 
 		wp_enqueue_script(
 			$this->plugin_name,
-			BLOGSHQ_PLUGIN_URL . 'admin/js/admin.js',
+			BLOGSHQ_PLUGIN_URL . 'admin/js/admin.min.js',
 			array( 'jquery', 'wp-color-picker' ),
 			$this->version,
 			false

@@ -313,7 +313,7 @@ html {
 
 	.share-section .summarize-share-label {
 		display: flex;
-		justify-content: flex-end;
+		justify-content: flex-start;
 	}
 
 	.summarize-share-link:hover .summarize-share-tooltip {

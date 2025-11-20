@@ -26,8 +26,6 @@ class BlogsHQ_Logos {
 		// Register shortcode
 		add_shortcode( 'blogshq_category_logo', array( $this, 'render_shortcode' ) );
 
-		// Enqueue frontend styles
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_styles' ) );
 	}
 
 	/**
@@ -45,17 +43,6 @@ class BlogsHQ_Logos {
 		
 		// Or if it's a post (TOC auto-inserts)
 		$is_post = is_singular( 'post' );
-		
-		if ( $has_logo || $has_toc || $has_ai || $is_post ) {
-			$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
-			wp_enqueue_style(
-				'blogshq-frontend',
-				BLOGSHQ_PLUGIN_URL . "assets/css/frontend{$suffix}.css",
-				array(),
-				BLOGSHQ_VERSION,
-				'all'
-			);
-		}
 	}
 
 

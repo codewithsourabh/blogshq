@@ -178,7 +178,7 @@ class BlogsHQ {
 	public function enqueue_public_styles() {
 		wp_enqueue_style(
 			$this->plugin_name,
-			BLOGSHQ_PLUGIN_URL . 'assets/css/frontend.css',
+			BLOGSHQ_PLUGIN_URL . 'assets/css/frontend.min.css',
 			array(),
 			$this->version,
 			'all'
@@ -191,7 +191,7 @@ class BlogsHQ {
 	 * @since 1.0.0
 	 */
 	public function enqueue_public_scripts() {
-		// Scripts are enqueued conditionally by modules
+	
 	}
 
 	/**
