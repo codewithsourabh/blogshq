@@ -112,27 +112,109 @@ body.jnews-dark-mode .blogshq-logo-dark {
    ======================================================================== */
 
 .link-icon {
-	display: inline-flex;
+	display: inline-flex !important;
 	align-items: center;
+	justify-content: center;
 	opacity: 0;
-	transition: opacity 0.15s;
+	transition: opacity 0.2s ease-in-out;
 	margin-left: 8px;
 	vertical-align: middle;
 	cursor: pointer;
 	text-decoration: none;
+	background: none;
+	border: none;
+	padding: 4px;
+	position: relative;
+	z-index: 10;
 }
 
 .link-icon svg {
 	display: block;
+	width: 20px;
+	height: 20px;
+	pointer-events: none;
 }
 
-#blogshq-link-popup {
-	align-items: center;
-	display: flex;
+/* Hover state - Universal selector with high specificity */
+h1:hover > .link-icon,
+h2:hover > .link-icon,
+h3:hover > .link-icon,
+h4:hover > .link-icon,
+h5:hover > .link-icon,
+h6:hover > .link-icon {
+	opacity: 1 !important;
 }
 
-#blogshq-link-popup span {
-	margin-right: 10px;
+/* Additional selectors for nested content areas */
+.entry-content h1:hover > .link-icon,
+.entry-content h2:hover > .link-icon,
+.entry-content h3:hover > .link-icon,
+.entry-content h4:hover > .link-icon,
+.entry-content h5:hover > .link-icon,
+.entry-content h6:hover > .link-icon,
+.post-content h1:hover > .link-icon,
+.post-content h2:hover > .link-icon,
+.post-content h3:hover > .link-icon,
+.post-content h4:hover > .link-icon,
+.post-content h5:hover > .link-icon,
+.post-content h6:hover > .link-icon,
+.content-inner h1:hover > .link-icon,
+.content-inner h2:hover > .link-icon,
+.content-inner h3:hover > .link-icon,
+.content-inner h4:hover > .link-icon,
+.content-inner h5:hover > .link-icon,
+.content-inner h6:hover > .link-icon,
+article h1:hover > .link-icon,
+article h2:hover > .link-icon,
+article h3:hover > .link-icon,
+article h4:hover > .link-icon,
+article h5:hover > .link-icon,
+article h6:hover > .link-icon,
+main h1:hover > .link-icon,
+main h2:hover > .link-icon,
+main h3:hover > .link-icon,
+main h4:hover > .link-icon,
+main h5:hover > .link-icon,
+main h6:hover > .link-icon {
+	opacity: 1 !important;
+}
+
+/* Focus state for accessibility */
+.link-icon:focus {
+	opacity: 1 !important;
+	outline: 2px solid var(--blogshq-primary-color);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Active/click state */
+.link-icon:active {
+	opacity: 1 !important;
+	transform: scale(0.95);
+}
+
+/* Mobile - show on touch */
+@media (hover: none) and (pointer: coarse) {
+	.link-icon {
+		opacity: 0.6;
+	}
+	
+	.link-icon:active {
+		opacity: 1 !important;
+	}
+}
+
+/* Ensure icon doesn't inherit heading styles */
+h1 .link-icon,
+h2 .link-icon,
+h3 .link-icon,
+h4 .link-icon,
+h5 .link-icon,
+h6 .link-icon {
+	font-weight: normal;
+	font-size: 16px;
+	line-height: 1;
+	color: inherit;
 }
 
 /* ========================================================================
@@ -379,4 +461,23 @@ html {
 	#blogshq-link-popup {
 		display: none !important;
 	}
+}
+
+/* ========================================================================
+   Theme Compatibility
+   ======================================================================== */
+
+/* Force visibility on hover regardless of theme styles */
+.entry-content *:hover > .link-icon,
+.post-content *:hover > .link-icon,
+.article-content *:hover > .link-icon {
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* Ensure the icon doesn't get hidden by theme styles */
+.link-icon {
+	pointer-events: auto !important;
+	position: relative !important;
+	z-index: 10 !important;
 }

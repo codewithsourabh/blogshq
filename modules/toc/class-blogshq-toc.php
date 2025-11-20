@@ -434,7 +434,7 @@ public function enqueue_link_icon_script() {
 	// Enqueue the JavaScript file
 	wp_enqueue_script(
 		'blogshq-link-icon',
-		BLOGSHQ_PLUGIN_URL . 'assets/js/link-icon.js',
+		BLOGSHQ_PLUGIN_URL . 'assets/js/link-icon.min.js',
 		array(),
 		BLOGSHQ_VERSION,
 		true
@@ -453,4 +453,25 @@ public function enqueue_link_icon_script() {
 	);
 }
 
-} // End of BlogsHQ_TOC class
+/**
+ * Clear all plugin caches.
+ *
+ * @since 1.0.0
+ */
+public function clear_all_caches() {
+    // Clear transients
+    global $wpdb;
+    $wpdb->query(
+        "DELETE FROM {$wpdb->options} 
+        WHERE option_name LIKE '_transient_blogshq_%' 
+        OR option_name LIKE '_transient_timeout_blogshq_%'"
+    );
+    
+    // Clear object cache
+    wp_cache_flush();
+    
+    // Clear heading regex cache
+    $this->clear_heading_regex_cache();
+}
+
+} 
