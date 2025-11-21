@@ -13,8 +13,6 @@
  * Text Domain:       blogshq
  * Domain Path:       /languages
  * Update URI:        https://github.com/codewithsourabh/blogshq
- * GitHub Theme URI:  codewithsourabh/blogshq
- * GitHub Theme URI:  htps://github.com/codewithsourabh/blogshq
  *
  * @package BlogsHQ
  * @link    https://blogshq.com

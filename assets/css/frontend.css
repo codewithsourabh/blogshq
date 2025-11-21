@@ -126,22 +126,27 @@ body.jnews-dark-mode .blogshq-logo-dark {
 	padding: 4px;
 	position: relative;
 	z-index: 10;
+	/* CRITICAL: Ensure it's clickable */
+	pointer-events: auto !important;
 }
 
 .link-icon svg {
 	display: block;
 	width: 20px;
 	height: 20px;
-	pointer-events: none;
+	/* CRITICAL: SVG shouldn't capture clicks */
+	pointer-events: none !important;
 }
 
-/* Hover state - Universal selector with high specificity */
+/* Hover state - show icon */
 h1:hover > .link-icon,
 h2:hover > .link-icon,
 h3:hover > .link-icon,
 h4:hover > .link-icon,
 h5:hover > .link-icon,
-h6:hover > .link-icon {
+h6:hover > .link-icon,
+.link-icon:focus,
+.link-icon:hover {
 	opacity: 1 !important;
 }
 

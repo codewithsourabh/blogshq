@@ -367,44 +367,64 @@ class BlogsHQ_TOC {
 	}
 
 	/**
-	 * Insert TOC before first heading and add anchors.
-	 *
-	 * @since 1.0.0
-	 * @param string $content Post content.
-	 * @return string Modified content.
-	 */
-	public function insert_toc_and_anchors( $content ) {
-		if ( ! is_singular( 'post' ) || is_admin() ) {
-			return $content;
-		}
-
-		$tag_regex = $this->get_heading_regex();
-		if ( empty( $tag_regex ) ) {
-			return $content;
-		}
-
-		// Add anchors
-		$content = preg_replace_callback(
-			'/<(' . $tag_regex . ')([^>]*)>(.*?)<\/\1>/i',
-			function ( $m ) {
-				$heading_text = strip_tags( $m[3] );
-				$anchor = sanitize_title( remove_accents( $heading_text ) );
-				// Remove any existing ID prefixes and numbers
-				$anchor = preg_replace( '/^(aioseo-|toc-)/', '', $anchor );
-				$anchor = preg_replace( '/-\d+$/', '', $anchor );
-				return '<' . $m[1] . $m[2] . ' id="' . esc_attr( $anchor ) . '">' . $m[3] . '</' . $m[1] . '>';
-			},
-			$content
-		);
-
-		// Insert TOC before first heading (only on mobile)
-		if ( wp_is_mobile() ) {
-			$toc     = do_shortcode( '[blogshq_toc]' );
-			$content = preg_replace( '/(<(' . $tag_regex . ')[^>]*>)/i', $toc . '$1', $content, 1 );
-		}
-
+ * Insert TOC before first heading and add anchors.
+ *
+ * @since 1.0.0
+ * @param string $content Post content.
+ * @return string Modified content.
+ */
+public function insert_toc_and_anchors( $content ) {
+	if ( ! is_singular( 'post' ) || is_admin() ) {
 		return $content;
 	}
+
+	$tag_regex = $this->get_heading_regex();
+	if ( empty( $tag_regex ) ) {
+		return $content;
+	}
+
+	// Add anchors with clean IDs
+	$content = preg_replace_callback(
+		'/<(' . $tag_regex . ')([^>]*)>(.*?)<\/\1>/i',
+		function ( $m ) {
+			$heading_text = strip_tags( $m[3] );
+			$anchor = sanitize_title( remove_accents( $heading_text ) );
+			
+			// Clean up the anchor
+			$anchor = preg_replace( '/^(aioseo-|toc-)/', '', $anchor );
+			$anchor = preg_replace( '/-\d+$/', '', $anchor );
+			$anchor = preg_replace( '/[^a-z0-9-]/', '', strtolower( $anchor ) );
+			
+			// Check if heading already has an ID
+			if ( preg_match( '/id=["\']([^"\']+)["\']/', $m[2], $id_match ) ) {
+				// Use existing ID but clean it
+				$existing_id = preg_replace( '/^(aioseo-|toc-)/', '', $id_match[1] );
+				$existing_id = preg_replace( '/-\d+$/', '', $existing_id );
+				$existing_id = preg_replace( '/[^a-z0-9-]/', '', strtolower( $existing_id ) );
+				
+				// Replace with cleaned ID
+				$attributes = preg_replace( 
+					'/id=["\'][^"\']+["\']/', 
+					'id="' . esc_attr( $existing_id ) . '"', 
+					$m[2] 
+				);
+				return '<' . $m[1] . $attributes . '>' . $m[3] . '</' . $m[1] . '>';
+			} else {
+				// Add new ID
+				return '<' . $m[1] . $m[2] . ' id="' . esc_attr( $anchor ) . '">' . $m[3] . '</' . $m[1] . '>';
+			}
+		},
+		$content
+	);
+
+	// Insert TOC before first heading (only on mobile)
+	if ( wp_is_mobile() ) {
+		$toc     = do_shortcode( '[blogshq_toc]' );
+		$content = preg_replace( '/(<(' . $tag_regex . ')[^>]*>)/i', $toc . '$1', $content, 1 );
+	}
+
+	return $content;
+}
 
 	/**
 	 * Enqueue link icon script.
