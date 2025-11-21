@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       BlogsHQ Admin Toolkit
- * Plugin URI:        https://blogshq.com/plugins/admin-toolkit
+ * Plugin URI:        https://github.com/codewithsourabh/blogshq
  * Description:       Comprehensive admin tools for BlogsHQ including category logos, TOC, FAQ blocks, and AI share functionality.
  * Version:           1.1.0
  * Requires at least: 5.8
@@ -12,7 +12,9 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       blogshq
  * Domain Path:       /languages
- * Update URI:        https://example.com/updates/
+ * Update URI:        https://github.com/codewithsourabh/blogshq
+ * GitHub Theme URI:  codewithsourabh/blogshq
+ * GitHub Theme URI:  htps://github.com/codewithsourabh/blogshq
  *
  * @package BlogsHQ
  * @link    https://blogshq.com
