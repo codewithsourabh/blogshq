@@ -60,7 +60,7 @@ class BlogsHQ_Admin {
 
 		wp_enqueue_style(
 			$this->plugin_name,
-			BLOGSHQ_PLUGIN_URL . 'admin/css/admin.min.css',
+			BLOGSHQ_PLUGIN_URL . 'admin/css/admin.css',
 			array(),
 			$this->version,
 			'all'
