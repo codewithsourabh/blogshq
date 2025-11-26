@@ -74,7 +74,7 @@ class BlogsHQ_Logos {
 		?>
 		<div class="blogshq-logos-settings">
 			<h2><?php esc_html_e( 'Category Logos', 'blogshq' ); ?></h2>
-			<p><?php esc_html_e( 'Assign light and dark mode logos to your categories. Use the shortcode [blogshq_category_logo] to display them.', 'blogshq' ); ?></p>
+			<p><?php esc_html_e( 'Assign light and dark mode logos to your categories. Use the shortcode <code> [blogshq_category_logo] </code> to display them.', 'blogshq' ); ?></p>
 			
 			<form method="post" action="">
 				<?php wp_nonce_field( 'blogshq_logos_settings', 'blogshq_logos_nonce' ); ?>
