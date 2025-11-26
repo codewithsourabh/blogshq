@@ -1,33 +1,40 @@
-# Dependencies
-node_modules/
-vendor/
-
-# Build files
-*.log
-*.zip
+# Editor and OS files
+.editorconfig
+.vscode/
+.idea/
+*.swp
+*.bak
 .DS_Store
 Thumbs.db
 
-# IDE files
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# WordPress
-wp-config.php
-.htaccess
-
-# Environment
-.env
-.env.local
-
-# Composer
-composer.lock
-
-# NPM
+# Node/npm
+node_modules/
+package.json
 package-lock.json
+postcss.config.js
 
-# Testing
-phpunit.xml
-/tests/coverage/
+# Composer (if not needed)
+composer.json
+composer.lock
+vendor/
+
+# WordPress CLI/Env
+.wp-env.json
+wp-cli.yml
+
+# Build/output
+dist/
+build/
+.sass-cache
+*.log
+
+# Temp images/files
+*.jpg
+*.png
+*.gif
+
+# php sniffers
+phpcs.xml.dist
+
+# Other temp/test/output files
+tests/
