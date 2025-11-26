@@ -58,9 +58,11 @@ class BlogsHQ_Logos {
 		}
 
 		// Handle form submission
-		if ( isset( $_POST['blogshq_save_logos'] ) ) {
-			$this->save_logos();
-		}
+		if ( isset( $_POST['blogshq_save_logos'] ) && 
+		isset( $_POST['blogshq_logos_nonce'] ) && 
+		wp_verify_nonce( $_POST['blogshq_logos_nonce'], 'blogshq_logos_settings' ) ) {
+		$this->save_logos();
+}
 
 		$categories = get_transient( 'blogshq_categories' );
 		if ( false === $categories ) {

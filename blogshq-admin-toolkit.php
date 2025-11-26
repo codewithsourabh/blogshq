@@ -175,39 +175,72 @@ if ( blogshq_check_requirements() ) {
 	 *
 	 * @param string $class_name The class name to load.
 	 */
-	function blogshq_autoloader( $class_name ) {
-		// Only autoload classes from this plugin
-		if ( strpos( $class_name, 'BlogsHQ_' ) !== 0 ) {
-			return;
-		}
+/**
+ * Class map for faster autoloading
+ */
+function blogshq_get_class_map() {
+    static $class_map = null;
+    
+    if ( null === $class_map ) {
+        $class_map = array(
+            'BlogsHQ'              => 'includes/class-blogshq.php',
+            'BlogsHQ_Loader'       => 'includes/class-blogshq-loader.php',
+            'BlogsHQ_I18n'         => 'includes/class-blogshq-i18n.php',
+            'BlogsHQ_Activator'    => 'includes/class-blogshq-activator.php',
+            'BlogsHQ_Deactivator'  => 'includes/class-blogshq-deactivator.php',
+            'BlogsHQ_Admin'        => 'admin/class-blogshq-admin.php',
+            'BlogsHQ_Logos'        => 'modules/logos/class-blogshq-logos.php',
+            'BlogsHQ_TOC'          => 'modules/toc/class-blogshq-toc.php',
+            'BlogsHQ_FAQ_Block'    => 'modules/faq/class-blogshq-faq-block.php',
+            'BlogsHQ_AI_Share'     => 'modules/ai-share/class-blogshq-ai-share.php',
+        );
+    }
+    
+    return $class_map;
+}
 
-		// Convert class name to file name
-		$class_file = 'class-' . str_replace( '_', '-', strtolower( $class_name ) ) . '.php';
-
-		// Define possible paths
-		$paths = array(
-			BLOGSHQ_PLUGIN_DIR . 'includes/',
-			BLOGSHQ_PLUGIN_DIR . 'admin/',
-			BLOGSHQ_PLUGIN_DIR . 'modules/logos/',
-			BLOGSHQ_PLUGIN_DIR . 'modules/toc/',
-			BLOGSHQ_PLUGIN_DIR . 'modules/faq/',
-			BLOGSHQ_PLUGIN_DIR . 'modules/ai-share/',
-		);
-
-		// Try to load the class file
-		foreach ( $paths as $path ) {
-			$file = $path . $class_file;
-			if ( file_exists( $file ) ) {
-				require_once $file;
-				return;
-			}
-		}
-
-		// Fallback warning if class not found
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG === true ) {
-			error_log( 'BlogsHQ: Failed to autoload class ' . $class_name );
-		}
-	}
+/**
+ * Optimized autoloader using class map
+ */
+function blogshq_autoloader( $class_name ) {
+    if ( strpos( $class_name, 'BlogsHQ_' ) !== 0 ) {
+        return;
+    }
+    
+    $class_map = blogshq_get_class_map();
+    
+    if ( isset( $class_map[ $class_name ] ) ) {
+        $file = BLOGSHQ_PLUGIN_DIR . $class_map[ $class_name ];
+        
+        if ( file_exists( $file ) ) {
+            require_once $file;
+            return;
+        }
+    }
+    
+    // Fallback for dynamic classes
+    $class_file = 'class-' . str_replace( '_', '-', strtolower( $class_name ) ) . '.php';
+    $paths = array(
+        'includes/',
+        'admin/',
+        'modules/logos/',
+        'modules/toc/',
+        'modules/faq/',
+        'modules/ai-share/',
+    );
+    
+    foreach ( $paths as $path ) {
+        $file = BLOGSHQ_PLUGIN_DIR . $path . $class_file;
+        if ( file_exists( $file ) ) {
+            require_once $file;
+            return;
+        }
+    }
+    
+    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+        error_log( 'BlogsHQ: Failed to autoload class ' . $class_name );
+    }
+}
 	spl_autoload_register( 'blogshq_autoloader' );
 
 	/**

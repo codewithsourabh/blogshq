@@ -46,6 +46,9 @@ class BlogsHQ_TOC {
 
 		// Enqueue link icon script
 		add_action( 'wp_footer', array( $this, 'enqueue_link_icon_script' ) );
+
+		add_action( 'update_option_blogshq_toc_headings', array( $this, 'clear_settings_cache' ) );
+		add_action( 'update_option_blogshq_toc_link_icon_enabled', array( $this, 'clear_settings_cache' ) );
 	}
 
 	/**
@@ -337,6 +340,37 @@ class BlogsHQ_TOC {
 		}
 
 		return $toc;
+	}
+
+	/**
+	 * Get cached TOC settings
+	 *
+	 * @return array TOC settings
+	 */
+	private function get_toc_settings() {
+		$cache_key = 'blogshq_toc_settings';
+		$settings = wp_cache_get( $cache_key );
+		
+		if ( false === $settings ) {
+			$settings = array(
+				'headings'   => get_option( 'blogshq_toc_headings', array( 'h2', 'h3', 'h4', 'h5', 'h6' ) ),
+				'link_icon_enabled' => get_option( 'blogshq_toc_link_icon_enabled', false ),
+				'link_icon_headings' => get_option( 'blogshq_toc_link_icon_headings', array( 'h2' ) ),
+				'link_icon_color' => get_option( 'blogshq_toc_link_icon_color', '#2E62E9' ),
+			);
+			
+			wp_cache_set( $cache_key, $settings, '', HOUR_IN_SECONDS );
+		}
+		
+		return $settings;
+	}
+
+	/**
+	 * Clear settings cache when updated
+	 */
+	public function clear_settings_cache() {
+		wp_cache_delete( 'blogshq_toc_settings' );
+		$this->clear_heading_regex_cache();
 	}
 
 	/**
