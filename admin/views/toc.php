@@ -7,6 +7,7 @@
 
 <div class="blogshq-settings-section">
     <form method="post" action="" class="blogshq-ajax-form">
+        <input type="hidden" name="form_type" value="toc">
         <?php
         if ( class_exists( 'BlogsHQ_TOC' ) ) {
             $toc = new BlogsHQ_TOC();

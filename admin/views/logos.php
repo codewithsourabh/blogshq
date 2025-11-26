@@ -18,6 +18,7 @@ if ( class_exists( 'BlogsHQ_Logos' ) ) {
     <p><?php esc_html_e( 'Assign light and dark mode logos to your categories. Use the shortcode [blogshq_category_logo] to display them.', 'blogshq' ); ?></p>
     
     <form method="post" action="" class="blogshq-ajax-form">
+        <input type="hidden" name="form_type" value="category_logo">
         <?php wp_nonce_field( 'blogshq_logos_settings', 'blogshq_logos_nonce' ); ?>
         
         <table class="widefat fixed striped">

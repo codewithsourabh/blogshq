@@ -78,7 +78,7 @@ class BlogsHQ_Logos {
 			
 			<form method="post" action="">
 				<?php wp_nonce_field( 'blogshq_logos_settings', 'blogshq_logos_nonce' ); ?>
-				
+				<input type="hidden" name="form_type" value="category_logo">
 				<table class="widefat fixed striped">
 					<thead>
 						<tr>

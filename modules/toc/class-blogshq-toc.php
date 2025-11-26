@@ -131,7 +131,7 @@ class BlogsHQ_TOC {
 			
 			<form method="post" action="">
 				<?php wp_nonce_field( 'blogshq_toc_settings', 'blogshq_toc_nonce' ); ?>
-				
+				<input type="hidden" name="form_type" value="toc">
 				<table class="form-table">
 					<tr>
 						<th scope="row">
