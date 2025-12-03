@@ -155,6 +155,8 @@
                 e.preventDefault();
                 e.stopPropagation();
                 copyLinkToClipboard(heading.id);
+                // Remove focus after copy
+                icon.blur();
             });
 
             // Keyboard handler
