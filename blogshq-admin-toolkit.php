@@ -3,7 +3,7 @@
  * Plugin Name:       BlogsHQ Admin Toolkit
  * Plugin URI:        https://github.com/codewithsourabh/blogshq
  * Description:       Comprehensive admin tools for BlogsHQ including category logos, TOC, FAQ blocks, and AI share functionality.
- * Version:           1.2.0
+ * Version: 1.2.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Sourabh
@@ -26,7 +26,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Current plugin version.
  */
-define( 'BLOGSHQ_VERSION', '1.1.0' );
+define( 'BLOGSHQ_VERSION', '1.2.0' );
 
 /**
  * Asset version with hash for better cache busting.
@@ -62,6 +62,46 @@ define( 'BLOGSHQ_MIN_PHP_VERSION', '7.4' );
  * Minimum WordPress version required.
  */
 define( 'BLOGSHQ_MIN_WP_VERSION', '5.8' );
+
+
+/**
+ * ============================================================================
+ * GITHUB AUTO-UPDATER
+ * ============================================================================
+ */
+
+// Load Plugin Update Checker library
+require_once BLOGSHQ_PLUGIN_DIR . 'lib/plugin-update-checker/plugin-update-checker.php';
+
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+/**
+ * Initialize GitHub Updates
+ */
+function blogshq_init_github_updater() {
+	$update_checker = PucFactory::buildUpdateChecker(
+		'https://github.com/codewithsourabh/blogshq/',  // Your GitHub repo URL
+		__FILE__,                                         // Full path to main plugin file
+		'blogshq-admin-toolkit'                          // Plugin slug
+	);
+	
+	// Optional: Set the branch for updates (default is 'main')
+	$update_checker->setBranch( 'master' );
+	
+	// Enable release assets (if you package your plugin as .zip)
+	$update_checker->getVcsApi()->enableReleaseAssets();
+}
+
+// Initialize updater only if library exists
+if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
+	add_action( 'plugins_loaded', 'blogshq_init_github_updater' );
+}
+
+/**
+ * ============================================================================
+ * END GITHUB AUTO-UPDATER
+ * ============================================================================
+ */
 
 /**
  * Check PHP and WordPress versions before loading plugin.

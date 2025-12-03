@@ -1,0 +1,50 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.2.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Create plugin ZIP
+        run: |
+          # Remove dev files
+          rm -rf .git .github node_modules tests vendor composer.json package.json
+          
+          # Create ZIP
+          cd ..
+          zip -r blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip blogshq-admin-toolkit \
+            -x "*.git*" \
+            -x "*node_modules*" \
+            -x "*tests*" \
+            -x "*.editorconfig" \
+            -x "*composer.*"
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ../blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip
+          body: |
+            ## What's Changed in v${{ steps.get_version.outputs.VERSION }}
+            
+            - Update details here
+            
+            ## Installation
+            1. Download the ZIP file below
+            2. Go to WordPress Admin → Plugins → Add New → Upload Plugin
+            3. Upload the ZIP file and activate
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

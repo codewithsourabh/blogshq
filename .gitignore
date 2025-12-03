@@ -1,41 +1,24 @@
-# Node / JS
-node_modules/
-npm-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-package-lock.json.tmp
-
-# Composer / PHP
-vendor/
-composer.phar
-
-# Build outputs (uncomment if you do not commit built assets)
-# build/
-# dist/
-
-# WordPress / Plugin caches
-.sass-cache/
-.cache/
-coverage/
-*.log
-*.zip
-*.tar.gz
-
-# IDEs and editors
-.idea/
+# Editor and OS files
 .vscode/
-*.sublime-workspace
-*.sublime-project
-
-# OS files
+.idea/
+*.swp
 .DS_Store
-Thumbs.db
 
-# Environment
-.env
-.env.* 
+# Node/npm
+node_modules/
+package-lock.json
 
-# Misc
-*.map
-tmp/
-tmp/*
+# Composer (keep composer.json, ignore vendor if using)
+vendor/
+
+# Keep lib folder for Plugin Update Checker
+!lib/
+!lib/plugin-update-checker/
+
+# Build/output
+dist/
+build/
+*.log
+
+# Tests
+tests/

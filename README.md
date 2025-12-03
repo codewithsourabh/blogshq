@@ -1,35 +1,42 @@
 # BlogsHQ Admin Toolkit
 
-WordPress plugin providing comprehensive admin tools including category logos, Table of Contents, FAQ blocks, and AI-powered share functionality.
-
-## Features
-
-- **Category Logos**: Assign light/dark mode logos to categories
-- **Table of Contents**: Auto-generate TOC for posts with customizable headings
-- **FAQ Blocks**: Structured FAQ schema markup
-- **AI Share**: One-click sharing to ChatGPT, Claude, Google AI, Grok, and Perplexity
-
 ## Installation
 
-1. Upload to `/wp-content/plugins/blogshq-admin-toolkit/`
-2. Activate through WordPress admin
-3. Configure settings under BlogsHQ menu
+### From WordPress Admin
+1. Download the latest release from [GitHub Releases](https://github.com/codewithsourabh/blogshq/releases)
+2. Go to WordPress Admin → Plugins → Add New → Upload Plugin
+3. Upload the ZIP file and activate
 
-## Shortcodes
+### Automatic Updates
+Once installed, the plugin will automatically check for updates from GitHub and notify you when new versions are available.
 
-- `[blogshq_category_logo]` - Display category logos
-- `[blogshq_toc]` - Insert table of contents
-- `[ai_share]` - Add AI summarization & share buttons
+## Development & Releases
 
-## Requirements
+### Creating a New Release
 
-- WordPress 5.8+
-- PHP 7.4+
+1. Update version numbers:
+```bash
+./scripts/prepare-release.sh 1.2.0
+```
 
-## License
+2. Review changes:
+```bash
+git diff
+```
 
-GPL v2 or later
+3. Commit and tag:
+```bash
+git add .
+git commit -m "Bump version to 1.2.0"
+git tag v1.2.0
+git push origin main --tags
+```
 
-## Author
+4. GitHub Actions will automatically:
+   - Create a release
+   - Build and attach the plugin ZIP file
+   - Make it available for auto-updates
 
-Sourabh - [BlogsHQ.com](https://blogshq.com)
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
