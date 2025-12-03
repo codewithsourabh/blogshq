@@ -3,7 +3,7 @@
  * Plugin Name:       BlogsHQ Admin Toolkit
  * Plugin URI:        https://github.com/codewithsourabh/blogshq
  * Description:       Comprehensive admin tools for BlogsHQ including category logos, TOC, FAQ blocks, and AI share functionality.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Sourabh
@@ -26,7 +26,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Current plugin version.
  */
-define( 'BLOGSHQ_VERSION', '1.2.0' );
+define( 'BLOGSHQ_VERSION', '1.2.1' );
 
 /**
  * Asset version with hash for better cache busting.

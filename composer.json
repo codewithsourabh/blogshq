@@ -1,6 +1,6 @@
 {
     "name": "codewithsourabh/blogshq",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "WordPress admin toolkit for BlogsHQ",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",

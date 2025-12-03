@@ -1,6 +1,6 @@
 {
   "name": "blogshq-admin-toolkit",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "BlogsHQ Admin Toolkit",
   "scripts": {
     "minify:frontend-css": "postcss assets/css/frontend.css --use cssnano --output assets/css/frontend.min.css --no-map",
