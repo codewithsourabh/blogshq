@@ -1,25 +1,28 @@
-## [1.2.0] - 2025-12-03
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [1.2.0] - 2025-12-03
+
+### Added
+- GitHub auto-updater integration via Plugin Update Checker
+- Automated release workflow with GitHub Actions
+- Version management script for easier releases
+- Automatic ZIP file generation on tag push
+
+### Changed
+- Updated README with installation and release instructions
+- Improved plugin header documentation
+
+### Security
+- Enhanced security with GitHub-based update delivery
 
 ## [Unreleased]
 
-### Added
-- Initial setup of the project.
-
-### Changed
-- N/A
-
-### Fixed
-- N/A
-
-## [0.1.0] - 2025-11-18
-### Added
-- First release of the project.
+### Planned
+- Future features here
 
 ## [1.1.0] - 2024-01-19
 
@@ -51,3 +54,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Improved error logging for debugging
 - Enhanced autoloader fallback handling
 - Better separation of concerns
+
+## [0.1.0] - 2025-11-18
+
+### Added
+- First release of the project
+- Category logos module
+- Table of Contents (TOC) module
+- FAQ Block with schema markup
+- AI Share functionality

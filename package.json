@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "description": "BlogsHQ Admin Toolkit",
   "scripts": {
-"minify:frontend-css": "postcss assets/css/frontend.css --use cssnano --output assets/css/frontend.min.css --no-map",
+    "minify:frontend-css": "postcss assets/css/frontend.css --use cssnano --output assets/css/frontend.min.css --no-map",
     "minify:admin-css": "postcss admin/css/admin.css --use cssnano --output admin/css/admin.min.css --no-map",
     "minify:link-icon-js": "terser assets/js/link-icon.js -c -m -o assets/js/link-icon.min.js",
     "minify:admin-js": "terser admin/js/admin.js -c -m -o admin/js/admin.min.js",
@@ -17,14 +17,19 @@
     "watch:link-icon": "terser assets/js/link-icon.js -c -m -o assets/js/link-icon.min.js --watch",
     "watch:admin": "terser admin/js/admin.js -c -m -o admin/js/admin.min.js --watch",
     "watch:ai-share": "terser assets/js/ai-share.js -c -m -o assets/js/ai-share.min.js --watch",
-    "build": "wp-scripts build --webpack-src-dir=blocks/faq/src",
+    "build": "npm run minify && wp-scripts build --webpack-src-dir=blocks/faq/src",
     "start": "wp-scripts start --webpack-src-dir=blocks/faq/src",
     "lint:js": "wp-scripts lint-js",
     "format": "prettier --write '**/*.{js,jsx,json,md}'"
   },
   "devDependencies": {
     "@wordpress/scripts": "^26.0.0",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "postcss": "^8.4.31",
+    "postcss-cli": "^11.0.0",
+    "cssnano": "^6.0.1",
+    "terser": "^5.24.0",
+    "npm-run-all": "^4.1.5"
   },
   "main": "index.js",
   "directories": {
@@ -34,10 +39,9 @@
     "type": "git",
     "url": "git+https://github.com/codewithsourabh/blogshq.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "keywords": ["wordpress", "plugin", "blogshq"],
+  "author": "Sourabh",
+  "license": "GPL-2.0-or-later",
   "bugs": {
     "url": "https://github.com/codewithsourabh/blogshq/issues"
   },
