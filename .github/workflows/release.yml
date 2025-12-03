@@ -19,31 +19,55 @@ jobs:
       
       - name: Create plugin ZIP
         run: |
-          # Remove dev files
-          rm -rf .git .github node_modules tests vendor composer.json package.json
+          # Create clean directory for ZIP
+          mkdir -p ../package
           
-          # Create ZIP
-          cd ..
-          zip -r blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip blogshq-admin-toolkit \
-            -x "*.git*" \
-            -x "*node_modules*" \
-            -x "*tests*" \
-            -x "*.editorconfig" \
-            -x "*composer.*"
+          # Copy plugin files to package directory
+          rsync -av --progress . ../package/blogshq-admin-toolkit \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'node_modules' \
+            --exclude 'tests' \
+            --exclude 'vendor' \
+            --exclude '.editorconfig' \
+            --exclude '.gitignore' \
+            --exclude 'composer.json' \
+            --exclude 'composer.lock' \
+            --exclude 'package.json' \
+            --exclude 'package-lock.json' \
+            --exclude 'phpcs.xml.dist' \
+            --exclude 'postcss.config.js' \
+            --exclude '.wp-env.json' \
+            --exclude 'wp-cli.yml' \
+            --exclude 'scripts'
+          
+          # Create ZIP from package directory
+          cd ../package
+          zip -r ../blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip blogshq-admin-toolkit
+          
+          # Move ZIP back to workspace
+          mv ../blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip $GITHUB_WORKSPACE/
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ../blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip
+          files: blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip
           body: |
             ## What's Changed in v${{ steps.get_version.outputs.VERSION }}
             
-            - Update details here
+            See [CHANGELOG.md](https://github.com/codewithsourabh/blogshq/blob/master/CHANGELOG.md) for details.
             
             ## Installation
             1. Download the ZIP file below
             2. Go to WordPress Admin → Plugins → Add New → Upload Plugin
             3. Upload the ZIP file and activate
+            4. The plugin will automatically check for future updates
+            
+            ## Automatic Updates
+            Once installed, the plugin will automatically:
+            - Check for updates from this GitHub repository
+            - Display update notifications in WordPress admin
+            - Allow one-click updates directly from WordPress
           draft: false
           prerelease: false
         env:
