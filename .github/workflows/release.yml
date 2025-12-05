@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*.*.*'  # Triggers on version tags like v1.2.0
+      - 'v*.*.*'
 
 jobs:
   release:
@@ -29,71 +29,99 @@ jobs:
       
       - name: Install dependencies and build
         run: |
+          echo "Installing Node dependencies..."
           npm install
+          
+          echo "Building assets..."
           npm run build
-          composer install --no-dev --optimize-autoloader
+          
+          echo "Installing Composer dependencies (production only)..."
+          composer install --no-dev --optimize-autoloader --no-interaction
       
-      - name: Create plugin ZIP
+      - name: Create clean plugin directory
         run: |
-          # Create clean directory for ZIP
-          mkdir -p ../package
+          echo "Creating plugin directory..."
+          mkdir -p blogshq-admin-toolkit
           
-          # Copy plugin files to package directory
-          rsync -av --progress . ../package/blogshq-admin-toolkit \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'node_modules' \
-            --exclude 'tests' \
-            --exclude 'vendor' \
-            --exclude '.editorconfig' \
-            --exclude '.gitignore' \
-            --exclude 'composer.json' \
-            --exclude 'composer.lock' \
-            --exclude 'package.json' \
-            --exclude 'package-lock.json' \
-            --exclude 'phpcs.xml.dist' \
-            --exclude 'postcss.config.js' \
-            --exclude '.wp-env.json' \
-            --exclude 'wp-cli.yml' \
-            --exclude 'scripts' \
-            --exclude 'CONTRIBUTING.md' \
-            --exclude 'SECURITY.md' \
-            --exclude 'README.md' \
-            --exclude 'blocks/faq/src' \
-            --exclude 'admin/css/admin.css' \
-            --exclude 'assets/css/frontend.css' \
-            --exclude 'assets/js/link-icon.js' \
-            --exclude 'assets/js/ai-share.js' \
-            --exclude 'admin/js/admin.js'
+          echo "Copying files based on .distignore..."
           
-          # Create ZIP from package directory
-          cd ../package
-          zip -r ../blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip blogshq-admin-toolkit
+          # Copy all files first
+          rsync -av --progress . blogshq-admin-toolkit/ \
+            --exclude='.git' \
+            --exclude='blogshq-admin-toolkit'
           
-          # Move ZIP back to workspace
-          mv ../blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip $GITHUB_WORKSPACE/
+          # Remove files listed in .distignore
+          while IFS= read -r pattern; do
+            # Skip empty lines and comments
+            [[ -z "$pattern" || "$pattern" =~ ^#.*$ ]] && continue
+            
+            # Remove the pattern from plugin directory
+            echo "Removing: $pattern"
+            rm -rf "blogshq-admin-toolkit/$pattern"
+          done < .distignore
+          
+          echo "Plugin directory created successfully"
+      
+      - name: Verify plugin structure
+        run: |
+          echo "Verifying plugin structure..."
+          ls -la blogshq-admin-toolkit/
+          
+          echo "Checking for main plugin file..."
+          if [ ! -f "blogshq-admin-toolkit/blogshq-admin-toolkit.php" ]; then
+            echo "Error: Main plugin file not found!"
+            exit 1
+          fi
+          
+          echo "Checking for lib directory..."
+          if [ ! -d "blogshq-admin-toolkit/lib" ]; then
+            echo "Error: lib directory not found!"
+            exit 1
+          fi
+          
+          echo "Structure verification complete"
+      
+      - name: Create ZIP file
+        run: |
+          echo "Creating ZIP file..."
+          cd blogshq-admin-toolkit
+          zip -r ../blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip . -x "*.git*"
+          cd ..
+          
+          echo "ZIP file created successfully"
+          ls -lh blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip
           body: |
-            ## What's Changed in v${{ steps.get_version.outputs.VERSION }}
+            ## BlogsHQ Admin Toolkit v${{ steps.get_version.outputs.VERSION }}
             
-            See [CHANGELOG.md](https://github.com/codewithsourabh/blogshq/blob/master/CHANGELOG.md) for details.
-            
-            ## Installation
-            1. Download the ZIP file below
+            ### 📥 Installation
+            1. Download `blogshq-admin-toolkit-${{ steps.get_version.outputs.VERSION }}.zip`
             2. Go to WordPress Admin → Plugins → Add New → Upload Plugin
             3. Upload the ZIP file and activate
-            4. The plugin will automatically check for future updates
+            4. Plugin will automatically check for updates
             
-            ## Automatic Updates
-            Once installed, the plugin will automatically:
-            - Check for updates from this GitHub repository
+            ### 🔄 Automatic Updates
+            Once installed, the plugin will:
+            - Automatically check for updates from this repository
             - Display update notifications in WordPress admin
             - Allow one-click updates directly from WordPress
+            
+            ### 📝 Changelog
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/master/CHANGELOG.md) for detailed changes.
+            
+            ### 🐛 Found an Issue?
+            Report bugs on our [Issues page](https://github.com/${{ github.repository }}/issues)
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf blogshq-admin-toolkit
+          echo "Cleanup complete"

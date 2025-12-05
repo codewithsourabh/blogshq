@@ -1,7 +1,57 @@
+# Version Control
 .git
-   .github
-   node_modules
-   tests
-   vendor
-   scripts
-   blocks/faq/src
+.gitignore
+.github
+
+# Dependencies
+node_modules
+vendor
+
+# Build Tools & Config
+package.json
+package-lock.json
+composer.json
+composer.lock
+phpcs.xml.dist
+postcss.config.js
+.editorconfig
+.wp-env.json
+wp-cli.yml
+
+# Documentation
+README.md
+CONTRIBUTING.md
+SECURITY.md
+CHANGELOG.md
+
+# Tests & Scripts
+tests
+scripts
+
+# Source Files (keep only compiled)
+blocks/faq/src
+admin/css/admin.css
+assets/css/frontend.css
+assets/js/link-icon.js
+assets/js/ai-share.js
+admin/js/admin.js
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary Files
+*.tmp
+*.temp
+.cache
