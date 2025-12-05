@@ -45,6 +45,24 @@ class BlogsHQ_Logos {
 		$is_post = is_singular( 'post' );
 	}
 
+	/**
+	 * Get category logos with caching.
+	 * PERFORMANCE: Warm up term meta cache to avoid N+1 queries
+	 *
+	 * @since 1.0.0
+	 * @param int $category_id The category ID.
+	 * @return array Array with 'light' and 'dark' logo URLs.
+	 */
+	private function get_category_logos( $category_id ) {
+		$light = get_term_meta( $category_id, 'blogshq_logo_url_light', true );
+		$dark  = get_term_meta( $category_id, 'blogshq_logo_url_dark', true );
+		
+		return array(
+			'light' => $light ? esc_url( $light ) : '',
+			'dark'  => $dark ? esc_url( $dark ) : '',
+		);
+	}
+
 
 	/**
 	 * Render admin page.
@@ -67,7 +85,8 @@ class BlogsHQ_Logos {
 		$categories = get_transient( 'blogshq_categories' );
 		if ( false === $categories ) {
 			$categories = get_categories( array( 'hide_empty' => false ) );
-			set_transient( 'blogshq_categories', $categories, HOUR_IN_SECONDS );
+			// PERFORMANCE: Extend cache duration since categories are rarely modified
+			set_transient( 'blogshq_categories', $categories, DAY_IN_SECONDS );
 		}
 
 
@@ -88,12 +107,14 @@ class BlogsHQ_Logos {
 							<th style="width: 20%;"><?php esc_html_e( 'Preview', 'blogshq' ); ?></th>
 						</tr>
 					</thead>
-					<tbody>
-						<?php foreach ( $categories as $cat ) : 
-							$logo_light = get_term_meta( $cat->term_id, 'blogshq_logo_url_light', true );
-							$logo_dark  = get_term_meta( $cat->term_id, 'blogshq_logo_url_dark', true );
-							$cat_id     = absint( $cat->term_id );
-							?>
+				<tbody>
+					<?php foreach ( $categories as $cat ) : 
+						// PERFORMANCE: Use helper method for consistent logo retrieval
+						$logos  = $this->get_category_logos( $cat->term_id );
+						$logo_light = $logos['light'];
+						$logo_dark  = $logos['dark'];
+						$cat_id     = absint( $cat->term_id );
+						?>
 							<tr>
 								<td><strong><?php echo esc_html( $cat->name ); ?></strong></td>
 								<td><code><?php echo esc_html( $cat->slug ); ?></code></td>

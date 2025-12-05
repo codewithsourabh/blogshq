@@ -182,15 +182,25 @@ class BlogsHQ_Admin
 		foreach ($categories as $cat) {
 			$cat_id = absint($cat->term_id);
 
-			// Sanitize and save light logo
-			$light_url = isset($_POST['logo_url_light'][$cat_id])
-				? esc_url_raw($_POST['logo_url_light'][$cat_id])
-				: '';
+			// Sanitize and save light logo with image extension validation
+			$light_url = '';
+			if ( isset($_POST['logo_url_light'][$cat_id]) ) {
+				$url = esc_url_raw($_POST['logo_url_light'][$cat_id]);
+				// SECURITY: Validate image file extensions
+				if ( $url && preg_match('/\.(jpg|jpeg|png|gif|webp|svg)$/i', $url) ) {
+					$light_url = $url;
+				}
+			}
 
-			// Sanitize and save dark logo
-			$dark_url = isset($_POST['logo_url_dark'][$cat_id])
-				? esc_url_raw($_POST['logo_url_dark'][$cat_id])
-				: '';
+			// Sanitize and save dark logo with image extension validation
+			$dark_url = '';
+			if ( isset($_POST['logo_url_dark'][$cat_id]) ) {
+				$url = esc_url_raw($_POST['logo_url_dark'][$cat_id]);
+				// SECURITY: Validate image file extensions
+				if ( $url && preg_match('/\.(jpg|jpeg|png|gif|webp|svg)$/i', $url) ) {
+					$dark_url = $url;
+				}
+			}
 
 			update_term_meta($cat_id, 'blogshq_logo_url_light', $light_url);
 			update_term_meta($cat_id, 'blogshq_logo_url_dark', $dark_url);
@@ -207,19 +217,23 @@ class BlogsHQ_Admin
 	 */
 	private function process_toc_save()
 	{
-		// Save TOC headings
-		$checked = isset($_POST['toc_headings']) && is_array($_POST['toc_headings'])
-			? array_intersect($_POST['toc_headings'], array('h2', 'h3', 'h4', 'h5', 'h6'))
+		// Save TOC headings with explicit sanitization
+		$headings = isset($_POST['toc_headings']) && is_array($_POST['toc_headings'])
+			? array_map('sanitize_key', $_POST['toc_headings'])
 			: array();
+		// SECURITY: Whitelist allowed heading tags
+		$checked = array_intersect($headings, array('h2', 'h3', 'h4', 'h5', 'h6'));
 		update_option('blogshq_toc_headings', $checked);
 
 		// Save link icon options
 		$link_icon_enabled = isset($_POST['link_icon_enabled']);
 		update_option('blogshq_toc_link_icon_enabled', $link_icon_enabled);
 
-		$icon_headings = isset($_POST['link_icon_headings']) && is_array($_POST['link_icon_headings'])
-			? array_intersect($_POST['link_icon_headings'], array('h2', 'h3', 'h4', 'h5', 'h6'))
+		// SECURITY: Sanitize heading tags with explicit whitelist
+		$icon_headings_raw = isset($_POST['link_icon_headings']) && is_array($_POST['link_icon_headings'])
+			? array_map('sanitize_key', $_POST['link_icon_headings'])
 			: array();
+		$icon_headings = array_intersect($icon_headings_raw, array('h2', 'h3', 'h4', 'h5', 'h6'));
 		update_option('blogshq_toc_link_icon_headings', $icon_headings);
 
 		$color = isset($_POST['link_icon_color']) ? sanitize_hex_color($_POST['link_icon_color']) : '#2E62E9';

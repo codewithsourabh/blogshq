@@ -81,7 +81,8 @@ class BlogsHQ_AI_Share {
 		}
 
 		$url         = esc_url( $permalink );
-		$encoded_url = urlencode( $url );
+		// SECURITY: Use rawurlencode for URL parameters instead of urlencode
+		$encoded_url = rawurlencode( $url );
 
 		ob_start();
 		?>

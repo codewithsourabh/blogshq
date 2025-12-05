@@ -99,6 +99,30 @@ class BlogsHQ_TOC {
 	}
 
 	/**
+	 * Get cached TOC settings.
+	 * PERFORMANCE: Cache all TOC settings together to reduce database queries
+	 *
+	 * @since 1.0.0
+	 * @return array
+	 */
+	private function get_toc_settings() {
+		$cache_key = 'blogshq_toc_settings_cache';
+		$settings = wp_cache_get( $cache_key );
+		
+		if ( false === $settings ) {
+			$settings = array(
+				'headings'      => get_option( 'blogshq_toc_headings', array( 'h2', 'h3', 'h4', 'h5', 'h6' ) ),
+				'link_icon'     => get_option( 'blogshq_toc_link_icon_enabled', false ),
+				'icon_headings' => get_option( 'blogshq_toc_link_icon_headings', array( 'h2' ) ),
+				'icon_color'    => get_option( 'blogshq_toc_link_icon_color', '#2E62E9' ),
+			);
+			wp_cache_set( $cache_key, $settings, '', HOUR_IN_SECONDS );
+		}
+		
+		return $settings;
+	}
+
+	/**
 	 * Render admin page.
 	 *
 	 * @since 1.0.0
@@ -486,9 +510,11 @@ public function enqueue_link_icon_script() {
 	}
 
 	// Enqueue the JavaScript file
+	// PERFORMANCE: Use minified version unless SCRIPT_DEBUG is enabled
+	$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 	wp_enqueue_script(
 		'blogshq-link-icon',
-		BLOGSHQ_PLUGIN_URL . 'assets/js/link-icon.min.js',
+		BLOGSHQ_PLUGIN_URL . "assets/js/link-icon{$suffix}.js",
 		array(),
 		BLOGSHQ_VERSION,
 		true
