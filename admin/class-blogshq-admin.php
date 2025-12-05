@@ -35,8 +35,12 @@ class BlogsHQ_Admin
 	 */
 	public function optimize_heartbeat($settings)
 	{
-		if ($this->is_plugin_page()) {
-			$settings['interval'] = 60;
+		// Only check if we're in admin area and screen is initialized
+		if (is_admin() && function_exists('get_current_screen')) {
+			$screen = get_current_screen();
+			if ($screen && strpos($screen->id, 'blogshq') !== false) {
+				$settings['interval'] = 60;
+			}
 		}
 		return $settings;
 	}
@@ -241,10 +245,20 @@ class BlogsHQ_Admin
 		);
 	}
 
+	/**
+	 * Check if current page is a plugin admin page.
+	 *
+	 * @return bool
+	 */
 	private function is_plugin_page()
 	{
+		// Safety check: ensure we're in admin and screen function exists
+		if (!is_admin() || !function_exists('get_current_screen')) {
+			return false;
+		}
+		
 		$screen = get_current_screen();
-		if (! $screen) {
+		if (!$screen) {
 			return false;
 		}
 
@@ -337,5 +351,14 @@ class BlogsHQ_Admin
 	private function handle_toc_save()
 	{
 		do_action('blogshq_save_toc');
+	}
+	private function handle_faq_save()
+	{
+		do_action('blogshq_save_faq');
+	}
+
+	private function handle_ai_share_save()
+	{
+		do_action('blogshq_save_ai_share');
 	}
 }
