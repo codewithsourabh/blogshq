@@ -1,8 +1,10 @@
 <?php
-
 /**
- * FILE: includes/class-blogshq-deactivator.php
  * Fired during plugin deactivation.
+ *
+ * @package    BlogsHQ
+ * @subpackage BlogsHQ/includes
+ * @since      1.0.0
  */
 
 if ( ! defined( 'WPINC' ) ) {
@@ -13,24 +15,17 @@ class BlogsHQ_Deactivator {
 
 	/**
 	 * Deactivation tasks.
-	 *
-	 * @since 1.0.0
 	 */
 	public static function deactivate() {
-		// Clear all transients
 		self::clear_transients();
-
-		// Flush rewrite rules
+		self::clear_module_caches();
+		
+		wp_cache_flush();
 		flush_rewrite_rules();
-
-		// Clear scheduled cron jobs if any
-		// wp_clear_scheduled_hook( 'blogshq_cron_hook' );
 	}
 
 	/**
 	 * Clear all plugin transients.
-	 *
-	 * @since 1.0.0
 	 */
 	private static function clear_transients() {
 		global $wpdb;
@@ -45,6 +40,19 @@ class BlogsHQ_Deactivator {
 			)
 		);
 	}
-}
 
-// ============================================================================
+	/**
+	 * Clear all module-specific caches.
+	 */
+	private static function clear_module_caches() {
+		if ( class_exists( 'BlogsHQ_TOC' ) ) {
+			$toc = new BlogsHQ_TOC();
+			$toc->clear_all_caches();
+		}
+
+		wp_cache_delete( 'blogshq_toc_settings' );
+		wp_cache_delete( 'blogshq_toc_settings_cache' );
+		
+		delete_transient( 'blogshq_categories' );
+	}
+}

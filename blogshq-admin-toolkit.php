@@ -18,59 +18,55 @@
  * @link    https://blogshq.com
  */
 
-// If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
 /**
- * Current plugin version.
+ * Plugin version number.
+ * Used for cache busting and version compatibility checks.
  */
 define( 'BLOGSHQ_VERSION', '1.2.1' );
 
 /**
- * Asset version with hash for better cache busting.
+ * Asset version for CSS/JS files.
+ * Automatically updates when plugin version changes for cache invalidation.
  */
 define( 'BLOGSHQ_ASSET_VERSION', BLOGSHQ_VERSION );
 
 /**
- * Plugin directory path.
+ * Plugin directory absolute path.
+ * Example: /var/www/html/wp-content/plugins/blogshq/
  */
 define( 'BLOGSHQ_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
  * Plugin directory URL.
+ * Example: https://example.com/wp-content/plugins/blogshq/
  */
 define( 'BLOGSHQ_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /**
  * Plugin basename.
+ * Example: blogshq/blogshq-admin-toolkit.php
  */
 define( 'BLOGSHQ_BASENAME', plugin_basename( __FILE__ ) );
 
 /**
- * Text domain for translations.
+ * Text domain for internationalization.
  */
 define( 'BLOGSHQ_TEXT_DOMAIN', 'blogshq' );
 
 /**
- * Minimum PHP version required.
+ * Minimum required PHP version.
  */
 define( 'BLOGSHQ_MIN_PHP_VERSION', '7.4' );
 
 /**
- * Minimum WordPress version required.
+ * Minimum required WordPress version.
  */
 define( 'BLOGSHQ_MIN_WP_VERSION', '5.8' );
 
-
-/**
- * ============================================================================
- * GITHUB AUTO-UPDATER
- * ============================================================================
- */
-
-// Load Plugin Update Checker library
 require_once BLOGSHQ_PLUGIN_DIR . 'lib/plugin-update-checker/plugin-update-checker.php';
 
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
@@ -80,40 +76,28 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
  */
 function blogshq_init_github_updater() {
 	$update_checker = PucFactory::buildUpdateChecker(
-		'https://github.com/codewithsourabh/blogshq/',  // Your GitHub repo URL
-		__FILE__,                                         // Full path to main plugin file
-		'blogshq-admin-toolkit'                          // Plugin slug
+		'https://github.com/codewithsourabh/blogshq/',
+		__FILE__,
+		'blogshq-admin-toolkit'
 	);
 	
-	// IMPORTANT: Set to 'master' since you're using master branch
 	$update_checker->setBranch( 'master' );
-	
-	// Enable release assets (required for ZIP file downloads)
 	$update_checker->getVcsApi()->enableReleaseAssets();
 }
 
-// Initialize updater only if library exists
 if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
 	add_action( 'plugins_loaded', 'blogshq_init_github_updater' );
 }
 
 /**
- * ============================================================================
- * END GITHUB AUTO-UPDATER
- * ============================================================================
- */
-
-/**
  * Check PHP and WordPress versions before loading plugin.
  */
 function blogshq_check_requirements() {
-	// Check PHP version
 	if ( version_compare( PHP_VERSION, BLOGSHQ_MIN_PHP_VERSION, '<' ) ) {
 		add_action( 'admin_notices', 'blogshq_php_version_notice' );
 		return false;
 	}
 
-	// Check WordPress version
 	global $wp_version;
 	if ( version_compare( $wp_version, BLOGSHQ_MIN_WP_VERSION, '<' ) ) {
 		add_action( 'admin_notices', 'blogshq_wp_version_notice' );
@@ -125,12 +109,6 @@ function blogshq_check_requirements() {
 
 /**
  * Custom error handler for debugging.
- *
- * @since 1.0.0
- * @param int    $errno      Error number.
- * @param string $errstr     Error message.
- * @param string $errfile    Error file.
- * @param int    $errline    Error line.
  */
 function blogshq_error_handler( $errno, $errstr, $errfile, $errline ) {
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG === true ) {
@@ -187,9 +165,6 @@ function blogshq_wp_version_notice() {
 	<?php
 }
 
-/**
- * Check requirements and load plugin.
- */
 if ( blogshq_check_requirements() ) {
 	/**
 	 * The code that runs during plugin activation.
@@ -211,90 +186,79 @@ if ( blogshq_check_requirements() ) {
 	register_deactivation_hook( __FILE__, 'blogshq_deactivate' );
 
 	/**
-	 * Autoloader for plugin classes.
-	 *
-	 * @param string $class_name The class name to load.
+	 * Class map for faster autoloading
 	 */
-/**
- * Class map for faster autoloading
- */
-function blogshq_get_class_map() {
-    static $class_map = null;
-    
-    if ( null === $class_map ) {
-        $class_map = array(
-            'BlogsHQ'              => 'includes/class-blogshq.php',
-            'BlogsHQ_Loader'       => 'includes/class-blogshq-loader.php',
-            'BlogsHQ_I18n'         => 'includes/class-blogshq-i18n.php',
-            'BlogsHQ_Activator'    => 'includes/class-blogshq-activator.php',
-            'BlogsHQ_Deactivator'  => 'includes/class-blogshq-deactivator.php',
-            'BlogsHQ_Admin'        => 'admin/class-blogshq-admin.php',
-            'BlogsHQ_Logos'        => 'modules/logos/class-blogshq-logos.php',
-            'BlogsHQ_TOC'          => 'modules/toc/class-blogshq-toc.php',
-            'BlogsHQ_FAQ_Block'    => 'modules/faq/class-blogshq-faq-block.php',
-            'BlogsHQ_AI_Share'     => 'modules/ai-share/class-blogshq-ai-share.php',
-        );
-    }
-    
-    return $class_map;
-}
-
-/**
- * Optimized autoloader using class map
- */
-function blogshq_autoloader( $class_name ) {
-    if ( strpos( $class_name, 'BlogsHQ_' ) !== 0 ) {
-        return;
-    }
-    
-    $class_map = blogshq_get_class_map();
-    
-    if ( isset( $class_map[ $class_name ] ) ) {
-        $file = BLOGSHQ_PLUGIN_DIR . $class_map[ $class_name ];
-        
-        if ( file_exists( $file ) ) {
-            require_once $file;
-            return;
-        }
-    }
-    
-    // Fallback for dynamic classes
-    $class_file = 'class-' . str_replace( '_', '-', strtolower( $class_name ) ) . '.php';
-    $paths = array(
-        'includes/',
-        'admin/',
-        'modules/logos/',
-        'modules/toc/',
-        'modules/faq/',
-        'modules/ai-share/',
-    );
-    
-    foreach ( $paths as $path ) {
-        $file = BLOGSHQ_PLUGIN_DIR . $path . $class_file;
-        if ( file_exists( $file ) ) {
-            require_once $file;
-            return;
-        }
-    }
-    
-    if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-        error_log( 'BlogsHQ: Failed to autoload class ' . $class_name );
-    }
-}
-	spl_autoload_register( 'blogshq_autoloader' );
+	function blogshq_get_class_map() {
+		static $class_map = null;
+		
+		if ( null === $class_map ) {
+			$class_map = array(
+				'BlogsHQ'              => 'includes/class-blogshq.php',
+				'BlogsHQ_Loader'       => 'includes/class-blogshq-loader.php',
+				'BlogsHQ_I18n'         => 'includes/class-blogshq-i18n.php',
+				'BlogsHQ_Activator'    => 'includes/class-blogshq-activator.php',
+				'BlogsHQ_Deactivator'  => 'includes/class-blogshq-deactivator.php',
+				'BlogsHQ_Admin'        => 'admin/class-blogshq-admin.php',
+				'BlogsHQ_Logos'        => 'modules/logos/class-blogshq-logos.php',
+				'BlogsHQ_TOC'          => 'modules/toc/class-blogshq-toc.php',
+				'BlogsHQ_FAQ_Block'    => 'modules/faq/class-blogshq-faq-block.php',
+				'BlogsHQ_AI_Share'     => 'modules/ai-share/class-blogshq-ai-share.php',
+			);
+		}
+		
+		return $class_map;
+	}
 
 	/**
-	 * Load Composer autoloader if exists.
+	 * Optimized autoloader using class map
 	 */
+	function blogshq_autoloader( $class_name ) {
+		if ( strpos( $class_name, 'BlogsHQ_' ) !== 0 ) {
+			return;
+		}
+		
+		$class_map = blogshq_get_class_map();
+		
+		if ( isset( $class_map[ $class_name ] ) ) {
+			$file = BLOGSHQ_PLUGIN_DIR . $class_map[ $class_name ];
+			
+			if ( file_exists( $file ) ) {
+				require_once $file;
+				return;
+			}
+		}
+		
+		$class_file = 'class-' . str_replace( '_', '-', strtolower( $class_name ) ) . '.php';
+		$paths = array(
+			'includes/',
+			'admin/',
+			'modules/logos/',
+			'modules/toc/',
+			'modules/faq/',
+			'modules/ai-share/',
+		);
+		
+		foreach ( $paths as $path ) {
+			$file = BLOGSHQ_PLUGIN_DIR . $path . $class_file;
+			if ( file_exists( $file ) ) {
+				require_once $file;
+				return;
+			}
+		}
+		
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'BlogsHQ: Failed to autoload class ' . $class_name );
+		}
+	}
+
+	spl_autoload_register( 'blogshq_autoloader' );
+
 	if ( file_exists( BLOGSHQ_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 		require_once BLOGSHQ_PLUGIN_DIR . 'vendor/autoload.php';
 	}
 
-
 	/**
 	 * Handle plugin version upgrades.
-	 *
-	 * @since 1.0.0
 	 */
 	function blogshq_handle_version_upgrade() {
 		$current_version = get_option( 'blogshq_version' );
@@ -310,8 +274,6 @@ function blogshq_autoloader( $class_name ) {
 
 	/**
 	 * Begin execution of the plugin.
-	 *
-	 * @since 1.0.0
 	 */
 	function blogshq_run() {
 		require_once BLOGSHQ_PLUGIN_DIR . 'includes/class-blogshq.php';

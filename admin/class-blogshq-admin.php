@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -8,80 +7,56 @@
  * @since      1.0.0
  */
 
-// If this file is called directly, abort.
 if (! defined('WPINC')) {
 	die;
 }
 
-/**
- * The admin-specific functionality of the plugin.
- */
 class BlogsHQ_Admin
 {
-
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since  1.0.0
-	 * @access private
-	 * @var    string $plugin_name The ID of this plugin.
-	 */
 	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since  1.0.0
-	 * @access private
-	 * @var    string $version The current version of this plugin.
-	 */
 	private $version;
 
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since 1.0.0
-	 * @param string $plugin_name The name of this plugin.
-	 * @param string $version     The version of this plugin.
-	 */
 	public function __construct($plugin_name, $version)
 	{
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 
-		// Initialize AJAX handlers
 		$this->init_ajax_handlers();
+		
+		add_filter('heartbeat_settings', array($this, 'optimize_heartbeat'));
 	}
 
 	/**
-	 * Initialize AJAX handlers
+	 * Optimize WordPress heartbeat for plugin admin pages.
+	 * Reduces AJAX calls from 15s to 60s to improve performance.
 	 *
-	 * @since 1.0.0
+	 * @param array $settings Heartbeat settings.
+	 * @return array Modified settings.
 	 */
+	public function optimize_heartbeat($settings)
+	{
+		if ($this->is_plugin_page()) {
+			$settings['interval'] = 60;
+		}
+		return $settings;
+	}
+
 	public function init_ajax_handlers()
 	{
 		add_action('wp_ajax_blogshq_load_tab', array($this, 'ajax_load_tab'));
 		add_action('wp_ajax_blogshq_save_settings', array($this, 'ajax_save_settings'));
 	}
 
-	/**
-	 * AJAX handler for loading tab content
-	 *
-	 * @since 1.0.0
-	 */
 	public function ajax_load_tab()
 	{
-		// Verify nonce
 		check_ajax_referer('blogshq_admin_nonce', 'nonce');
 
-		// Check permissions
 		if (! current_user_can('manage_options')) {
 			wp_send_json_error(array(
 				'message' => __('You do not have permission to perform this action.', 'blogshq')
 			));
 		}
 
-		// Get and validate tab
 		$tab = isset($_POST['tab']) ? sanitize_key($_POST['tab']) : 'logos';
 		$valid_tabs = array('logos', 'toc', 'faq', 'ai-share');
 
@@ -91,7 +66,6 @@ class BlogsHQ_Admin
 			));
 		}
 
-		// Capture tab content
 		ob_start();
 		blogshq_get_template($tab);
 		$content = ob_get_clean();
@@ -102,14 +76,8 @@ class BlogsHQ_Admin
 		));
 	}
 
-	/**
-	 * AJAX handler for saving settings
-	 *
-	 * @since 1.0.0
-	 */
 	public function ajax_save_settings()
 	{
-		// Verify nonce based on form type
 		$nonce_actions = array(
 			'blogshq_logos_nonce' => 'blogshq_logos_settings',
 			'blogshq_toc_nonce' => 'blogshq_toc_settings',
@@ -129,15 +97,12 @@ class BlogsHQ_Admin
 			));
 		}
 
-		// Check permissions
 		if (! current_user_can('manage_options')) {
 			wp_send_json_error(array(
 				'message' => __('You do not have permission to perform this action.', 'blogshq')
 			));
 		}
 
-		// Process form submission based on type
-		// Process form submission based on type
 		try {
 			if (isset($_POST['form_type'])) {
 				switch ($_POST['form_type']) {
@@ -170,34 +135,28 @@ class BlogsHQ_Admin
 		}
 	}
 
-	/**
-	 * Process logos save (extracted from BlogsHQ_Logos)
-	 *
-	 * @since 1.0.0
-	 */
 	private function process_logos_save()
 	{
 		$categories = get_categories(array('hide_empty' => false));
+		
+		$category_ids = wp_list_pluck($categories, 'term_id');
+		update_meta_cache('term', $category_ids);
 
 		foreach ($categories as $cat) {
 			$cat_id = absint($cat->term_id);
 
-			// Sanitize and save light logo with image extension validation
 			$light_url = '';
-			if ( isset($_POST['logo_url_light'][$cat_id]) ) {
+			if (isset($_POST['logo_url_light'][$cat_id])) {
 				$url = esc_url_raw($_POST['logo_url_light'][$cat_id]);
-				// SECURITY: Validate image file extensions
-				if ( $url && preg_match('/\.(jpg|jpeg|png|gif|webp|svg)$/i', $url) ) {
+				if ($url && preg_match('/\.(jpg|jpeg|png|gif|webp|svg)$/i', $url)) {
 					$light_url = $url;
 				}
 			}
 
-			// Sanitize and save dark logo with image extension validation
 			$dark_url = '';
-			if ( isset($_POST['logo_url_dark'][$cat_id]) ) {
+			if (isset($_POST['logo_url_dark'][$cat_id])) {
 				$url = esc_url_raw($_POST['logo_url_dark'][$cat_id]);
-				// SECURITY: Validate image file extensions
-				if ( $url && preg_match('/\.(jpg|jpeg|png|gif|webp|svg)$/i', $url) ) {
+				if ($url && preg_match('/\.(jpg|jpeg|png|gif|webp|svg)$/i', $url)) {
 					$dark_url = $url;
 				}
 			}
@@ -206,51 +165,37 @@ class BlogsHQ_Admin
 			update_term_meta($cat_id, 'blogshq_logo_url_dark', $dark_url);
 		}
 
-		// Clear cache
 		delete_transient('blogshq_categories');
 	}
 
-	/**
-	 * Process TOC save (extracted from BlogsHQ_TOC)
-	 *
-	 * @since 1.0.0
-	 */
 	private function process_toc_save()
 	{
-		// Save TOC headings with explicit sanitization
-		$headings = isset($_POST['toc_headings']) && is_array($_POST['toc_headings'])
+		$allowed_headings = array('h2', 'h3', 'h4', 'h5', 'h6');
+		
+		$headings_raw = isset($_POST['toc_headings']) && is_array($_POST['toc_headings'])
 			? array_map('sanitize_key', $_POST['toc_headings'])
 			: array();
-		// SECURITY: Whitelist allowed heading tags
-		$checked = array_intersect($headings, array('h2', 'h3', 'h4', 'h5', 'h6'));
-		update_option('blogshq_toc_headings', $checked);
+		$headings = array_intersect($headings_raw, $allowed_headings);
+		update_option('blogshq_toc_headings', $headings);
 
-		// Save link icon options
 		$link_icon_enabled = isset($_POST['link_icon_enabled']);
 		update_option('blogshq_toc_link_icon_enabled', $link_icon_enabled);
 
-		// SECURITY: Sanitize heading tags with explicit whitelist
 		$icon_headings_raw = isset($_POST['link_icon_headings']) && is_array($_POST['link_icon_headings'])
 			? array_map('sanitize_key', $_POST['link_icon_headings'])
 			: array();
-		$icon_headings = array_intersect($icon_headings_raw, array('h2', 'h3', 'h4', 'h5', 'h6'));
+		$icon_headings = array_intersect($icon_headings_raw, $allowed_headings);
 		update_option('blogshq_toc_link_icon_headings', $icon_headings);
 
 		$color = isset($_POST['link_icon_color']) ? sanitize_hex_color($_POST['link_icon_color']) : '#2E62E9';
 		update_option('blogshq_toc_link_icon_color', $color);
 
-		// Clear cache
 		wp_cache_delete('blogshq_toc_settings');
+		wp_cache_delete('blogshq_toc_settings_cache');
 	}
 
-	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since 1.0.0
-	 */
 	public function enqueue_styles()
 	{
-		// Only load on plugin pages
 		if (! $this->is_plugin_page()) {
 			return;
 		}
@@ -263,18 +208,11 @@ class BlogsHQ_Admin
 			'all'
 		);
 
-		// WordPress color picker
 		wp_enqueue_style('wp-color-picker');
 	}
 
-	/**
-	 * Register the JavaScript for the admin area.
-	 *
-	 * @since 1.0.0
-	 */
 	public function enqueue_scripts()
 	{
-		// Only load on plugin pages
 		if (! $this->is_plugin_page()) {
 			return;
 		}
@@ -287,7 +225,6 @@ class BlogsHQ_Admin
 			false
 		);
 
-		// Localize script
 		wp_localize_script(
 			$this->plugin_name,
 			'blogshqAdmin',
@@ -304,12 +241,6 @@ class BlogsHQ_Admin
 		);
 	}
 
-	/**
-	 * Check if current page is a plugin admin page.
-	 *
-	 * @since  1.0.0
-	 * @return bool
-	 */
 	private function is_plugin_page()
 	{
 		$screen = get_current_screen();
@@ -320,14 +251,8 @@ class BlogsHQ_Admin
 		return strpos($screen->id, 'blogshq') !== false;
 	}
 
-	/**
-	 * Register the administration menu for this plugin.
-	 *
-	 * @since 1.0.0
-	 */
 	public function add_plugin_admin_menu()
 	{
-		// Main menu
 		add_menu_page(
 			__('BlogsHQ Admin Toolkit', 'blogshq'),
 			__('BlogsHQ', 'blogshq'),
@@ -338,7 +263,6 @@ class BlogsHQ_Admin
 			26
 		);
 
-		// Dashboard submenu (same as parent)
 		add_submenu_page(
 			$this->plugin_name,
 			__('Dashboard', 'blogshq'),
@@ -349,38 +273,22 @@ class BlogsHQ_Admin
 		);
 	}
 
-	/**
-	 * Display the plugin dashboard page.
-	 *
-	 * @since 1.0.0
-	 */
 	public function display_plugin_dashboard()
 	{
-		// Check user capabilities
 		if (! current_user_can('manage_options')) {
 			wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'blogshq'));
 		}
 
-		// Get active tab
 		$active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'logos';
 
-		// Valid tabs
 		$valid_tabs = array('logos', 'toc', 'faq', 'ai-share');
 		if (! in_array($active_tab, $valid_tabs, true)) {
 			$active_tab = 'logos';
 		}
 
-		// Display dashboard template
 		blogshq_get_template('dashboard', null, array('active_tab' => $active_tab));
 	}
 
-	/**
-	 * Add settings action link to the plugins page.
-	 *
-	 * @since 1.0.0
-	 * @param array $links Existing plugin action links.
-	 * @return array Modified plugin action links.
-	 */
 	public function add_action_links($links)
 	{
 		$settings_link = array(
@@ -390,25 +298,16 @@ class BlogsHQ_Admin
 		return array_merge($settings_link, $links);
 	}
 
-	/**
-	 * Process form submissions (DEPRECATED - kept for backward compatibility)
-	 *
-	 * @since 1.0.0
-	 * @deprecated Use AJAX handlers instead
-	 */
 	public function process_form_submission()
 	{
-		// Check if form is submitted
 		if (! isset($_POST['blogshq_action'])) {
 			return;
 		}
 
-		// Verify nonce
 		if (! isset($_POST['blogshq_nonce']) || ! wp_verify_nonce($_POST['blogshq_nonce'], 'blogshq_settings')) {
 			wp_die(esc_html__('Security check failed.', 'blogshq'));
 		}
 
-		// Check user capabilities
 		if (! current_user_can('manage_options')) {
 			wp_die(esc_html__('You do not have sufficient permissions.', 'blogshq'));
 		}
@@ -417,7 +316,6 @@ class BlogsHQ_Admin
 
 		do_action('blogshq_before_form_processing', $action);
 
-		// Route to appropriate handler
 		switch ($action) {
 			case 'save_logos':
 				$this->handle_logos_save();
@@ -431,23 +329,11 @@ class BlogsHQ_Admin
 		}
 	}
 
-	/**
-	 * Handle logos form submission (DEPRECATED)
-	 *
-	 * @since 1.0.0
-	 * @deprecated
-	 */
 	private function handle_logos_save()
 	{
 		do_action('blogshq_save_logos');
 	}
 
-	/**
-	 * Handle TOC form submission (DEPRECATED)
-	 *
-	 * @since 1.0.0
-	 * @deprecated
-	 */
 	private function handle_toc_save()
 	{
 		do_action('blogshq_save_toc');

@@ -13,21 +13,15 @@
     var copiedText = settings.copiedText || 'The link has been copied to your clipboard.';
     var copyLabel = settings.copyLabel || 'Copy link to this section';
 
-    /**
-     * Show popup notification
-     * SECURITY FIX: Use textContent instead of innerHTML to prevent XSS
-     */
     function showPopup() {
         var popup = document.getElementById('blogshq-link-popup');
         
         if (!popup) {
             popup = document.createElement('div');
             popup.id = 'blogshq-link-popup';
-            // SECURITY: Use textContent instead of innerHTML to prevent XSS attacks
             var span = document.createElement('span');
             span.textContent = copiedText;
             popup.appendChild(span);
-            // SECURITY: Set color via style property, not by concatenating into cssText
             popup.style.cssText = 'display:none;position:fixed;bottom:-40px;left:50%;transform:translateX(-50%);padding:14px 20px;border-radius:5px;color:white;font-weight:500;font-size:16px;box-shadow:0 4px 24px rgba(0,0,0,0.07);transition:bottom 0.5s,opacity 0.5s;z-index:9999;';
             popup.style.backgroundColor = iconColor;
             document.body.appendChild(popup);
@@ -52,9 +46,6 @@
         }, 3000);
     }
 
-    /**
-     * Copy link to clipboard
-     */
     function copyLinkToClipboard(headingId) {
         var link = window.location.origin + window.location.pathname + '#' + headingId;
         
@@ -67,7 +58,6 @@
                     console.error('Failed to copy:', err);
                 });
         } else {
-            // Fallback
             var textArea = document.createElement('textarea');
             textArea.value = link;
             textArea.style.position = 'fixed';
@@ -86,10 +76,6 @@
         }
     }
 
-    /**
-     * Create link icon SVG
-     * SECURITY FIX: Use createElementNS for SVG instead of innerHTML
-     */
     function createLinkIcon() {
         var icon = document.createElement('button');
         icon.className = 'link-icon';
@@ -99,12 +85,11 @@
         icon.setAttribute('aria-label', copyLabel);
         icon.style.cssText = 'display:inline-flex;align-items:center;margin-left:8px;vertical-align:middle;cursor:pointer;text-decoration:none;background:none;border:none;padding:0;';
         
-        // SECURITY: Create SVG using createElementNS instead of innerHTML to prevent XSS
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('viewBox', '0 0 640 640');
         svg.setAttribute('width', '20');
         svg.setAttribute('height', '20');
-        svg.style.fill = iconColor;  // Set color via property, not innerHTML
+        svg.style.fill = iconColor;
         svg.style.verticalAlign = 'middle';
         svg.style.display = 'block';
         
@@ -116,67 +101,42 @@
         return icon;
     }
 
-    /**
-     * Add icons to headings - FIXED VERSION
-     */
     function addIconsToHeadings() {
-        console.log('BlogsHQ: Starting to add icons...');
-        console.log('BlogsHQ: Heading selectors from settings:', headingSelectors);
-        
-        // CRITICAL FIX: Search in entire document, not just .entry-content
-        // Build selector for headings with IDs
         var selectorParts = [];
         headingSelectors.forEach(function(tag) {
             selectorParts.push(tag + '[id]');
         });
         var selector = selectorParts.join(', ');
         
-        console.log('BlogsHQ: Using selector:', selector);
-        
-        // Find ALL headings with IDs in the document
         var headings = document.querySelectorAll(selector);
         
-        console.log('BlogsHQ: Found ' + headings.length + ' headings with configured tags and IDs');
-        
         if (headings.length === 0) {
-            // Fallback: try to find ANY headings with IDs
-            console.warn('BlogsHQ: No headings found with configured tags. Trying all headings...');
             headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
-            console.log('BlogsHQ: Found ' + headings.length + ' total headings with IDs');
         }
         
         var iconsAdded = 0;
         
         headings.forEach(function(heading) {
-            // Skip if already has icon
             if (heading.querySelector('.link-icon')) {
-                console.log('BlogsHQ: Heading already has icon:', heading.id);
                 return;
             }
 
-            // Check if this heading's tag is in our configured list
             var headingTag = heading.tagName.toLowerCase();
             if (headingSelectors.indexOf(headingTag) === -1) {
-                console.log('BlogsHQ: Skipping heading (not in configured tags):', headingTag, heading.id);
                 return;
             }
 
             var icon = createLinkIcon();
             heading.appendChild(icon);
             iconsAdded++;
-            
-            console.log('BlogsHQ: Icon added to ' + headingTag + '#' + heading.id);
 
-            // Click handler
             icon.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 copyLinkToClipboard(heading.id);
-                // Remove focus after copy
                 icon.blur();
             });
 
-            // Keyboard handler
             icon.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -185,13 +145,9 @@
             });
         });
         
-        console.log('BlogsHQ: Total icons added:', iconsAdded);
         return iconsAdded;
     }
 
-    /**
-     * Add smooth scroll to TOC links
-     */
     function addSmoothScrollToTOC() {
         var tocLinks = document.querySelectorAll('.blogshq-toc a[href^="#"]');
         
@@ -211,41 +167,9 @@
         });
     }
 
-    /**
-     * Initialize on DOM ready
-     */
     function init() {
-        console.log('BlogsHQ Link Icon: Initializing...');
-        console.log('BlogsHQ: Settings received:', {
-            headings: headingSelectors,
-            iconColor: iconColor,
-            copiedText: copiedText
-        });
-        
-        var iconsAdded = addIconsToHeadings();
+        addIconsToHeadings();
         addSmoothScrollToTOC();
-        
-        // Debug: Check results
-        setTimeout(function() {
-            var icons = document.querySelectorAll('.link-icon');
-            console.log('BlogsHQ: Total link icons in DOM:', icons.length);
-            
-            if (icons.length === 0) {
-                console.error('BlogsHQ: No link icons were added. Checking for headings...');
-                var allHeadingsWithId = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
-                console.log('BlogsHQ: Found ' + allHeadingsWithId.length + ' headings with IDs');
-                
-                if (allHeadingsWithId.length > 0) {
-                    console.log('BlogsHQ: First heading:', allHeadingsWithId[0].tagName, allHeadingsWithId[0].id);
-                    console.log('BlogsHQ: Configured to show icons on:', headingSelectors);
-                }
-            } else {
-                console.log('BlogsHQ: ✓ Link icons successfully added');
-                var firstIcon = icons[0];
-                var computedStyle = window.getComputedStyle(firstIcon);
-                console.log('BlogsHQ: First icon styles - opacity:', computedStyle.opacity, 'display:', computedStyle.display);
-            }
-        }, 500);
     }
 
     if (document.readyState === 'loading') {

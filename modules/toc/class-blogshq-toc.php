@@ -7,74 +7,35 @@
  * @since      1.0.0
  */
 
-// If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-/**
- * Table of Contents functionality.
- */
 class BlogsHQ_TOC {
 
-	/**
-	 * Cached heading regex pattern.
-	 *
-	 * @since  1.0.0
-	 * @access private
-	 * @var    string
-	 */
 	private static $heading_regex = null;
 
-	/**
-	 * Initialize the class.
-	 *
-	 * @since 1.0.0
-	 */
 	public function init() {
-		// Register shortcode
 		add_shortcode( 'blogshq_toc', array( $this, 'render_shortcode' ) );
-
-		// Add TOC and anchors to content
 		add_filter( 'the_content', array( $this, 'insert_toc_and_anchors' ), 10 );
-
-		// Clear cache on post save
 		add_action( 'save_post', array( $this, 'clear_toc_cache' ) );
-
-		// Invalidate heading regex cache when TOC settings update
 		add_action( 'update_option_blogshq_toc_headings', array( $this, 'clear_heading_regex_cache' ) );
-
-		// Enqueue link icon script
 		add_action( 'wp_footer', array( $this, 'enqueue_link_icon_script' ) );
-
 		add_action( 'update_option_blogshq_toc_headings', array( $this, 'clear_settings_cache' ) );
 		add_action( 'update_option_blogshq_toc_link_icon_enabled', array( $this, 'clear_settings_cache' ) );
+		add_action( 'update_option_blogshq_toc_link_icon_headings', array( $this, 'clear_settings_cache' ) );
+		add_action( 'update_option_blogshq_toc_link_icon_color', array( $this, 'clear_settings_cache' ) );
 	}
 
-	/**
-	 * Enqueue frontend styles.
-	 *
-	 * @since 1.0.0
-	 */
 	public function enqueue_frontend_styles() {
 		global $post;
 		
-		// Check if any shortcode is present
 		$has_logo = has_shortcode( $post->post_content ?? '', 'blogshq_category_logo' );
 		$has_toc = has_shortcode( $post->post_content ?? '', 'blogshq_toc' );
 		$has_ai = has_shortcode( $post->post_content ?? '', 'ai_share' );
-		
-		// Or if it's a post (TOC auto-inserts)
 		$is_post = is_singular( 'post' );
-		
 	}
 
-	/**
-	 * Get cached heading regex pattern.
-	 *
-	 * @since 1.0.0
-	 * @return string Regex pattern for selected headings.
-	 */
 	private function get_heading_regex() {
 		if ( null === self::$heading_regex ) {
 			$selected_headings = get_option( 'blogshq_toc_headings', array( 'h2', 'h3', 'h4', 'h5', 'h6' ) );
@@ -89,22 +50,10 @@ class BlogsHQ_TOC {
 		return self::$heading_regex;
 	}
 
-	/**
-	 * Clear heading regex cache.
-	 *
-	 * @since 1.0.0
-	 */
 	public function clear_heading_regex_cache() {
 		self::$heading_regex = null;
 	}
 
-	/**
-	 * Get cached TOC settings.
-	 * PERFORMANCE: Cache all TOC settings together to reduce database queries
-	 *
-	 * @since 1.0.0
-	 * @return array
-	 */
 	private function get_toc_settings() {
 		$cache_key = 'blogshq_toc_settings_cache';
 		$settings = wp_cache_get( $cache_key );
@@ -122,26 +71,20 @@ class BlogsHQ_TOC {
 		return $settings;
 	}
 
-	/**
-	 * Render admin page.
-	 *
-	 * @since 1.0.0
-	 */
 	public function render_admin_page() {
-		// Check user capabilities
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'blogshq' ) );
 		}
 
-		// Handle form submission
 		if ( isset( $_POST['blogshq_save_toc'] ) ) {
 			$this->save_settings();
 		}
 
-		$selected_headings  = get_option( 'blogshq_toc_headings', array( 'h2', 'h3', 'h4', 'h5', 'h6' ) );
-		$link_icon_enabled  = get_option( 'blogshq_toc_link_icon_enabled', false );
-		$link_icon_headings = get_option( 'blogshq_toc_link_icon_headings', array( 'h2' ) );
-		$link_icon_color    = get_option( 'blogshq_toc_link_icon_color', '#2E62E9' );
+		$settings = $this->get_toc_settings();
+		$selected_headings  = $settings['headings'];
+		$link_icon_enabled  = $settings['link_icon'];
+		$link_icon_headings = $settings['icon_headings'];
+		$link_icon_color    = $settings['icon_color'];
 
 		if ( ! is_array( $selected_headings ) ) {
 			$selected_headings = array();
@@ -252,31 +195,22 @@ class BlogsHQ_TOC {
 		<?php
 	}
 
-	/**
-	 * Save TOC settings.
-	 *
-	 * @since 1.0.0
-	 */
 	private function save_settings() {
-		// Verify nonce
 		if ( ! isset( $_POST['blogshq_toc_nonce'] ) || 
 			 ! wp_verify_nonce( $_POST['blogshq_toc_nonce'], 'blogshq_toc_settings' ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'blogshq' ) );
 		}
 
-		// Check user capabilities
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'blogshq' ) );
 		}
 
 		try {
-			// Save TOC headings
 			$checked = isset( $_POST['toc_headings'] ) && is_array( $_POST['toc_headings'] )
 				? array_intersect( $_POST['toc_headings'], array( 'h2', 'h3', 'h4', 'h5', 'h6' ) )
 				: array();
 			update_option( 'blogshq_toc_headings', $checked );
 
-			// Save link icon options
 			$link_icon_enabled = isset( $_POST['link_icon_enabled'] );
 			update_option( 'blogshq_toc_link_icon_enabled', $link_icon_enabled );
 
@@ -288,8 +222,8 @@ class BlogsHQ_TOC {
 			$color = isset( $_POST['link_icon_color'] ) ? sanitize_hex_color( $_POST['link_icon_color'] ) : '#2E62E9';
 			update_option( 'blogshq_toc_link_icon_color', $color );
 
-			// Clear heading regex cache
 			$this->clear_heading_regex_cache();
+			$this->clear_settings_cache();
 
 			add_settings_error(
 				'blogshq_messages',
@@ -309,13 +243,6 @@ class BlogsHQ_TOC {
 		settings_errors( 'blogshq_messages' );
 	}
 
-	/**
-	 * Generate TOC HTML.
-	 *
-	 * @since 1.0.0
-	 * @param int $post_id Post ID.
-	 * @return string TOC HTML output.
-	 */
 	private function generate_toc( $post_id ) {
 		$post = get_post( $post_id );
 		if ( empty( $post ) ) {
@@ -347,13 +274,6 @@ class BlogsHQ_TOC {
 		return apply_filters( 'blogshq_toc_output', $toc_output, $matches );
 	}
 
-	/**
-	 * Get cached TOC.
-	 *
-	 * @since 1.0.0
-	 * @param int $post_id Post ID.
-	 * @return string Cached or generated TOC.
-	 */
 	private function get_cached_toc( $post_id ) {
 		$transient_key = 'blogshq_toc_' . $post_id;
 		$toc           = get_transient( $transient_key );
@@ -366,54 +286,16 @@ class BlogsHQ_TOC {
 		return $toc;
 	}
 
-	/**
-	 * Get cached TOC settings
-	 *
-	 * @return array TOC settings
-	 */
-	private function get_toc_settings() {
-		$cache_key = 'blogshq_toc_settings';
-		$settings = wp_cache_get( $cache_key );
-		
-		if ( false === $settings ) {
-			$settings = array(
-				'headings'   => get_option( 'blogshq_toc_headings', array( 'h2', 'h3', 'h4', 'h5', 'h6' ) ),
-				'link_icon_enabled' => get_option( 'blogshq_toc_link_icon_enabled', false ),
-				'link_icon_headings' => get_option( 'blogshq_toc_link_icon_headings', array( 'h2' ) ),
-				'link_icon_color' => get_option( 'blogshq_toc_link_icon_color', '#2E62E9' ),
-			);
-			
-			wp_cache_set( $cache_key, $settings, '', HOUR_IN_SECONDS );
-		}
-		
-		return $settings;
-	}
-
-	/**
-	 * Clear settings cache when updated
-	 */
 	public function clear_settings_cache() {
 		wp_cache_delete( 'blogshq_toc_settings' );
+		wp_cache_delete( 'blogshq_toc_settings_cache' );
 		$this->clear_heading_regex_cache();
 	}
 
-	/**
-	 * Clear TOC cache on post update.
-	 *
-	 * @since 1.0.0
-	 * @param int $post_id Post ID.
-	 */
 	public function clear_toc_cache( $post_id ) {
 		delete_transient( 'blogshq_toc_' . $post_id );
 	}
 
-	/**
-	 * Render shortcode.
-	 *
-	 * @since 1.0.0
-	 * @param array $atts Shortcode attributes.
-	 * @return string TOC HTML.
-	 */
 	public function render_shortcode( $atts ) {
 		global $post;
 		
@@ -424,134 +306,101 @@ class BlogsHQ_TOC {
 		return $this->get_cached_toc( $post->ID );
 	}
 
-	/**
- * Insert TOC before first heading and add anchors.
- *
- * @since 1.0.0
- * @param string $content Post content.
- * @return string Modified content.
- */
-public function insert_toc_and_anchors( $content ) {
-	if ( ! is_singular( 'post' ) || is_admin() ) {
-		return $content;
-	}
+	public function insert_toc_and_anchors( $content ) {
+		if ( ! is_singular( 'post' ) || is_admin() ) {
+			return $content;
+		}
 
-	$tag_regex = $this->get_heading_regex();
-	if ( empty( $tag_regex ) ) {
-		return $content;
-	}
+		$tag_regex = $this->get_heading_regex();
+		if ( empty( $tag_regex ) ) {
+			return $content;
+		}
 
-	// Add anchors with clean IDs
-	$content = preg_replace_callback(
-		'/<(' . $tag_regex . ')([^>]*)>(.*?)<\/\1>/i',
-		function ( $m ) {
-			$heading_text = strip_tags( $m[3] );
-			$anchor = sanitize_title( remove_accents( $heading_text ) );
-			
-			// Clean up the anchor
-			$anchor = preg_replace( '/^(aioseo-|toc-)/', '', $anchor );
-			$anchor = preg_replace( '/-\d+$/', '', $anchor );
-			$anchor = preg_replace( '/[^a-z0-9-]/', '', strtolower( $anchor ) );
-			
-			// Check if heading already has an ID
-			if ( preg_match( '/id=["\']([^"\']+)["\']/', $m[2], $id_match ) ) {
-				// Use existing ID but clean it
-				$existing_id = preg_replace( '/^(aioseo-|toc-)/', '', $id_match[1] );
-				$existing_id = preg_replace( '/-\d+$/', '', $existing_id );
-				$existing_id = preg_replace( '/[^a-z0-9-]/', '', strtolower( $existing_id ) );
+		$used_ids = array();
+
+		$content = preg_replace_callback(
+			'/<(' . $tag_regex . ')([^>]*)>(.*?)<\/\1>/i',
+			function ( $m ) use ( &$used_ids ) {
+				$heading_text = strip_tags( $m[3] );
+				$anchor = sanitize_title( remove_accents( $heading_text ) );
+				$anchor = preg_replace( '/[^a-z0-9-]/', '', strtolower( $anchor ) );
 				
-				// Replace with cleaned ID
-				$attributes = preg_replace( 
-					'/id=["\'][^"\']+["\']/', 
-					'id="' . esc_attr( $existing_id ) . '"', 
-					$m[2] 
-				);
-				return '<' . $m[1] . $attributes . '>' . $m[3] . '</' . $m[1] . '>';
-			} else {
-				// Add new ID
+				$original_anchor = $anchor;
+				$counter = 1;
+				while ( in_array( $anchor, $used_ids, true ) ) {
+					$anchor = $original_anchor . '-' . $counter;
+					$counter++;
+				}
+				$used_ids[] = $anchor;
+				
+				if ( preg_match( '/id=["\']([^"\']+)["\']/', $m[2], $id_match ) ) {
+					return '<' . $m[1] . $m[2] . '>' . $m[3] . '</' . $m[1] . '>';
+				}
+				
 				return '<' . $m[1] . $m[2] . ' id="' . esc_attr( $anchor ) . '">' . $m[3] . '</' . $m[1] . '>';
-			}
-		},
-		$content
-	);
-
-	// Insert TOC before first heading (only on mobile)
-	if ( wp_is_mobile() ) {
-		$toc     = do_shortcode( '[blogshq_toc]' );
-		$content = preg_replace( '/(<(' . $tag_regex . ')[^>]*>)/i', $toc . '$1', $content, 1 );
-	}
-
-	return $content;
-}
-
-	/**
-	 * Enqueue link icon script.
-	 *
-	 * @since 1.0.0
-	 */
-public function enqueue_link_icon_script() {
-	if ( ! is_singular( 'post' ) || ! get_option( 'blogshq_toc_link_icon_enabled', false ) ) {
-		return;
-	}
-
-	// Cache all TOC settings in one query
-	$toc_settings = wp_cache_get( 'blogshq_toc_settings' );
-	
-	if ( false === $toc_settings ) {
-		$toc_settings = array(
-			'headings'   => get_option( 'blogshq_toc_link_icon_headings', array( 'h2' ) ),
-			'icon_color' => get_option( 'blogshq_toc_link_icon_color', '#2E62E9' ),
+			},
+			$content
 		);
-		wp_cache_set( 'blogshq_toc_settings', $toc_settings, '', HOUR_IN_SECONDS );
+
+		if ( wp_is_mobile() ) {
+			$toc     = do_shortcode( '[blogshq_toc]' );
+			$content = preg_replace( '/(<(' . $tag_regex . ')[^>]*>)/i', $toc . '$1', $content, 1 );
+		}
+
+		return $content;
 	}
 
-	if ( ! is_array( $toc_settings['headings'] ) || empty( $toc_settings['headings'] ) ) {
-		return;
+	public function enqueue_link_icon_script() {
+		if ( ! is_singular( 'post' ) ) {
+			return;
+		}
+
+		$settings = $this->get_toc_settings();
+		
+		if ( ! $settings['link_icon'] ) {
+			return;
+		}
+
+		if ( ! is_array( $settings['icon_headings'] ) || empty( $settings['icon_headings'] ) ) {
+			return;
+		}
+
+		$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+		wp_enqueue_script(
+			'blogshq-link-icon',
+			BLOGSHQ_PLUGIN_URL . "assets/js/link-icon{$suffix}.js",
+			array(),
+			BLOGSHQ_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'blogshq-link-icon',
+			'blogshqLinkIcon',
+			array(
+				'headings'   => $settings['icon_headings'],
+				'iconColor'  => $settings['icon_color'],
+				'copiedText' => __( 'The link has been copied to your clipboard.', 'blogshq' ),
+				'copyLabel'  => __( 'Copy link to this section', 'blogshq' ),
+			)
+		);
 	}
 
-	// Enqueue the JavaScript file
-	// PERFORMANCE: Use minified version unless SCRIPT_DEBUG is enabled
-	$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
-	wp_enqueue_script(
-		'blogshq-link-icon',
-		BLOGSHQ_PLUGIN_URL . "assets/js/link-icon{$suffix}.js",
-		array(),
-		BLOGSHQ_VERSION,
-		true
-	);
-
-	// Localize script with settings
-	wp_localize_script(
-		'blogshq-link-icon',
-		'blogshqLinkIcon',
-		array(
-			'headings'   => $toc_settings['headings'],
-			'iconColor'  => $toc_settings['icon_color'],
-			'copiedText' => __( 'The link has been copied to your clipboard.', 'blogshq' ),
-			'copyLabel'  => __( 'Copy link to this section', 'blogshq' ),
-		)
-	);
+	public function clear_all_caches() {
+		global $wpdb;
+		
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} 
+				WHERE option_name LIKE %s 
+				OR option_name LIKE %s",
+				$wpdb->esc_like( '_transient_blogshq_' ) . '%',
+				$wpdb->esc_like( '_transient_timeout_blogshq_' ) . '%'
+			)
+		);
+		
+		wp_cache_flush();
+		$this->clear_heading_regex_cache();
+		$this->clear_settings_cache();
+	}
 }
-
-/**
- * Clear all plugin caches.
- *
- * @since 1.0.0
- */
-public function clear_all_caches() {
-    // Clear transients
-    global $wpdb;
-    $wpdb->query(
-        "DELETE FROM {$wpdb->options} 
-        WHERE option_name LIKE '_transient_blogshq_%' 
-        OR option_name LIKE '_transient_timeout_blogshq_%'"
-    );
-    
-    // Clear object cache
-    wp_cache_flush();
-    
-    // Clear heading regex cache
-    $this->clear_heading_regex_cache();
-}
-
-} 

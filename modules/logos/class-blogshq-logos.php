@@ -7,7 +7,6 @@
  * @since      1.0.0
  */
 
-// If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
@@ -19,37 +18,27 @@ class BlogsHQ_Logos {
 
 	/**
 	 * Initialize the class.
-	 *
-	 * @since 1.0.0
 	 */
 	public function init() {
-		// Register shortcode
 		add_shortcode( 'blogshq_category_logo', array( $this, 'render_shortcode' ) );
-
 	}
 
 	/**
 	 * Enqueue frontend styles.
-	 *
-	 * @since 1.0.0
 	 */
 	public function enqueue_frontend_styles() {
 		global $post;
 		
-		// Check if any shortcode is present
 		$has_logo = has_shortcode( $post->post_content ?? '', 'blogshq_category_logo' );
 		$has_toc = has_shortcode( $post->post_content ?? '', 'blogshq_toc' );
 		$has_ai = has_shortcode( $post->post_content ?? '', 'ai_share' );
 		
-		// Or if it's a post (TOC auto-inserts)
 		$is_post = is_singular( 'post' );
 	}
 
 	/**
 	 * Get category logos with caching.
-	 * PERFORMANCE: Warm up term meta cache to avoid N+1 queries
 	 *
-	 * @since 1.0.0
 	 * @param int $category_id The category ID.
 	 * @return array Array with 'light' and 'dark' logo URLs.
 	 */
@@ -63,32 +52,29 @@ class BlogsHQ_Logos {
 		);
 	}
 
-
 	/**
 	 * Render admin page.
-	 *
-	 * @since 1.0.0
 	 */
 	public function render_admin_page() {
-		// Check user capabilities
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'blogshq' ) );
 		}
 
-		// Handle form submission
 		if ( isset( $_POST['blogshq_save_logos'] ) && 
-		isset( $_POST['blogshq_logos_nonce'] ) && 
-		wp_verify_nonce( $_POST['blogshq_logos_nonce'], 'blogshq_logos_settings' ) ) {
-		$this->save_logos();
-}
+		     isset( $_POST['blogshq_logos_nonce'] ) && 
+		     wp_verify_nonce( $_POST['blogshq_logos_nonce'], 'blogshq_logos_settings' ) ) {
+			$this->save_logos();
+		}
 
 		$categories = get_transient( 'blogshq_categories' );
 		if ( false === $categories ) {
 			$categories = get_categories( array( 'hide_empty' => false ) );
-			// PERFORMANCE: Extend cache duration since categories are rarely modified
 			set_transient( 'blogshq_categories', $categories, DAY_IN_SECONDS );
 		}
 
+		// Warm up term meta cache to prevent N+1 queries
+		$category_ids = wp_list_pluck( $categories, 'term_id' );
+		update_meta_cache( 'term', $category_ids );
 
 		?>
 		<div class="blogshq-logos-settings">
@@ -107,14 +93,13 @@ class BlogsHQ_Logos {
 							<th style="width: 20%;"><?php esc_html_e( 'Preview', 'blogshq' ); ?></th>
 						</tr>
 					</thead>
-				<tbody>
-					<?php foreach ( $categories as $cat ) : 
-						// PERFORMANCE: Use helper method for consistent logo retrieval
-						$logos  = $this->get_category_logos( $cat->term_id );
-						$logo_light = $logos['light'];
-						$logo_dark  = $logos['dark'];
-						$cat_id     = absint( $cat->term_id );
-						?>
+					<tbody>
+						<?php foreach ( $categories as $cat ) : 
+							$logos      = $this->get_category_logos( $cat->term_id );
+							$logo_light = $logos['light'];
+							$logo_dark  = $logos['dark'];
+							$cat_id     = absint( $cat->term_id );
+							?>
 							<tr>
 								<td><strong><?php echo esc_html( $cat->name ); ?></strong></td>
 								<td><code><?php echo esc_html( $cat->slug ); ?></code></td>
@@ -184,17 +169,13 @@ class BlogsHQ_Logos {
 
 	/**
 	 * Save logos from form submission.
-	 *
-	 * @since 1.0.0
 	 */
 	private function save_logos() {
-		// Verify nonce
 		if ( ! isset( $_POST['blogshq_logos_nonce'] ) || 
 			 ! wp_verify_nonce( $_POST['blogshq_logos_nonce'], 'blogshq_logos_settings' ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'blogshq' ) );
 		}
 
-		// Check user capabilities
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'blogshq' ) );
 		}
@@ -204,12 +185,10 @@ class BlogsHQ_Logos {
 		foreach ( $categories as $cat ) {
 			$cat_id = absint( $cat->term_id );
 			
-			// Sanitize and save light logo
 			$light_url = isset( $_POST['logo_url_light'][ $cat_id ] ) 
 				? esc_url_raw( $_POST['logo_url_light'][ $cat_id ] ) 
 				: '';
 			
-			// Sanitize and save dark logo
 			$dark_url = isset( $_POST['logo_url_dark'][ $cat_id ] ) 
 				? esc_url_raw( $_POST['logo_url_dark'][ $cat_id ] ) 
 				: '';
@@ -218,7 +197,6 @@ class BlogsHQ_Logos {
 			update_term_meta( $cat_id, 'blogshq_logo_url_dark', $dark_url );
 		}
 
-		// Show success message
 		add_settings_error(
 			'blogshq_messages',
 			'blogshq_message',
@@ -232,7 +210,6 @@ class BlogsHQ_Logos {
 	/**
 	 * Render shortcode.
 	 *
-	 * @since 1.0.0
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.
 	 */
@@ -285,23 +262,19 @@ class BlogsHQ_Logos {
 	/**
 	 * Get category based on shortcode attributes.
 	 *
-	 * @since 1.0.0
 	 * @param array $atts Shortcode attributes.
 	 * @return object|null Category object or null.
 	 */
 	private function get_category( $atts ) {
-		// Get by ID
 		if ( ! empty( $atts['id'] ) ) {
 			$cat_id = absint( $atts['id'] );
 			return get_category( $cat_id );
 		}
 
-		// Get by slug
 		if ( ! empty( $atts['slug'] ) ) {
 			return get_category_by_slug( $atts['slug'] );
 		}
 
-		// Get from current context
 		if ( is_category() ) {
 			return get_queried_object();
 		}

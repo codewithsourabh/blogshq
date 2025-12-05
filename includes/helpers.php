@@ -1,7 +1,10 @@
 <?php
 /**
- * FILE: includes/helpers.php
  * Helper functions used throughout the plugin.
+ *
+ * @package    BlogsHQ
+ * @subpackage BlogsHQ/includes
+ * @since      1.0.0
  */
 
 if ( ! defined( 'WPINC' ) ) {
@@ -11,7 +14,6 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Check if current user has required capability.
  *
- * @since 1.0.0
  * @param string $capability The capability to check.
  * @return bool
  */
@@ -22,7 +24,6 @@ function blogshq_current_user_can( string $capability = 'manage_options' ): bool
 /**
  * Get plugin option with default fallback.
  *
- * @since 1.0.0
  * @param string $option_name The option name.
  * @param mixed  $default     Default value if option doesn't exist.
  * @return mixed
@@ -34,7 +35,6 @@ function blogshq_get_option( string $option_name, $default = false ) {
 /**
  * Sanitize hex color.
  *
- * @since 1.0.0
  * @param string $color The color to sanitize.
  * @return string
  */
@@ -43,23 +43,20 @@ function blogshq_sanitize_hex_color( string $color ): string {
 		return '';
 	}
 
-	// Remove # if present
 	$color = ltrim( $color, '#' );
 
-	// Validate hex color
 	if ( preg_match( '/^[a-fA-F0-9]{6}$/', $color ) ) {
 		return '#' . $color;
 	} elseif ( preg_match( '/^[a-fA-F0-9]{3}$/', $color ) ) {
 		return '#' . $color;
 	}
 
-	return '#f2a200'; // Default color
+	return '';
 }
 
 /**
- * Log debug message (only if WP_DEBUG is true).
+ * Log debug message when WP_DEBUG is enabled.
  *
- * @since 1.0.0
  * @param mixed $message The message to log.
  */
 function blogshq_log( $message ): void {
@@ -73,15 +70,13 @@ function blogshq_log( $message ): void {
 }
 
 /**
- * Get template part.
+ * Get template part with security validation.
  *
- * @since 1.0.0
  * @param string $slug The template slug.
  * @param string $name Optional. Template name.
  * @param array  $args Optional. Arguments to pass to template.
  */
 function blogshq_get_template( $slug, $name = null, $args = array() ) {
-	// Whitelist allowed templates
 	$allowed_templates = array( 'dashboard', 'logos', 'toc', 'faq', 'ai-share' );
 	
 	if ( ! in_array( $slug, $allowed_templates, true ) ) {
@@ -92,7 +87,6 @@ function blogshq_get_template( $slug, $name = null, $args = array() ) {
 	$templates = array();
 	$name      = (string) $name;
 
-	// Validate name parameter - only alphanumeric and hyphens
 	if ( '' !== $name && ! preg_match( '/^[a-z0-9-]+$/i', $name ) ) {
 		blogshq_log( 'Invalid template name: ' . $name );
 		return;
@@ -105,9 +99,7 @@ function blogshq_get_template( $slug, $name = null, $args = array() ) {
 	$templates[] = "{$slug}.php";
 
 	if ( ! empty( $args ) && is_array( $args ) ) {
-		foreach ( $args as $key => $value ) {
-			${$key} = $value;
-		}
+		extract( $args, EXTR_SKIP );
 	}
 
 	$located = false;
@@ -128,7 +120,6 @@ function blogshq_get_template( $slug, $name = null, $args = array() ) {
 /**
  * Validate and sanitize settings array.
  *
- * @since 1.0.0
  * @param array $settings    Settings array to validate.
  * @param array $allowed_keys Allowed setting keys.
  * @return array Sanitized settings array.

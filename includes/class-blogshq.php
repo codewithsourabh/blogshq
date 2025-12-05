@@ -2,15 +2,11 @@
 /**
  * The core plugin class.
  *
- * This is used to define internationalization, admin-specific hooks, and
- * public-facing site hooks.
- *
  * @package    BlogsHQ
  * @subpackage BlogsHQ/includes
  * @since      1.0.0
  */
 
-// If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
@@ -23,34 +19,40 @@ class BlogsHQ {
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks.
 	 *
-	 * @since  1.0.0
-	 * @access protected
-	 * @var    BlogsHQ_Loader $loader Maintains and registers all hooks for the plugin.
+	 * @var BlogsHQ_Loader
 	 */
 	protected $loader;
 
 	/**
 	 * The unique identifier of this plugin.
 	 *
-	 * @since  1.0.0
-	 * @access protected
-	 * @var    string $plugin_name The string used to uniquely identify this plugin.
+	 * @var string
 	 */
 	protected $plugin_name;
 
 	/**
 	 * The current version of the plugin.
 	 *
-	 * @since  1.0.0
-	 * @access protected
-	 * @var    string $version The current version of the plugin.
+	 * @var string
 	 */
 	protected $version;
 
 	/**
-	 * Define the core functionality of the plugin.
+	 * Module instances.
 	 *
-	 * @since 1.0.0
+	 * @var array
+	 */
+	protected $modules = array();
+
+	/**
+	 * Service container for dependency injection.
+	 *
+	 * @var array
+	 */
+	private $container = array();
+
+	/**
+	 * Define the core functionality of the plugin.
 	 */
 	public function __construct() {
 		$this->version     = BLOGSHQ_VERSION;
@@ -59,35 +61,47 @@ class BlogsHQ {
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
-		$this->define_public_hooks();
 		$this->define_module_hooks();
+		$this->define_public_hooks();
+	}
+
+	/**
+	 * Register a service in the container.
+	 *
+	 * @param string   $name     Service name.
+	 * @param callable $callback Service factory callback.
+	 */
+	public function register_service( $name, $callback ) {
+		$this->container[ $name ] = $callback;
+	}
+
+	/**
+	 * Get a service from the container.
+	 * Services are lazy-loaded on first access.
+	 *
+	 * @param string $name Service name.
+	 * @return mixed|null Service instance or null if not found.
+	 */
+	public function get_service( $name ) {
+		if ( ! isset( $this->container[ $name ] ) ) {
+			return null;
+		}
+
+		if ( is_callable( $this->container[ $name ] ) ) {
+			$this->container[ $name ] = call_user_func( $this->container[ $name ] );
+		}
+
+		return $this->container[ $name ];
 	}
 
 	/**
 	 * Load the required dependencies for this plugin.
-	 *
-	 * @since  1.0.0
-	 * @access private
 	 */
 	private function load_dependencies() {
-		/**
-		 * The class responsible for orchestrating the actions and filters.
-		 */
 		require_once BLOGSHQ_PLUGIN_DIR . 'includes/class-blogshq-loader.php';
-
-		/**
-		 * The class responsible for defining internationalization functionality.
-		 */
 		require_once BLOGSHQ_PLUGIN_DIR . 'includes/class-blogshq-i18n.php';
-
-		/**
-		 * The class responsible for defining all actions in the admin area.
-		 */
 		require_once BLOGSHQ_PLUGIN_DIR . 'admin/class-blogshq-admin.php';
 
-		/**
-		 * Helper functions.
-		 */
 		if ( file_exists( BLOGSHQ_PLUGIN_DIR . 'includes/helpers.php' ) ) {
 			require_once BLOGSHQ_PLUGIN_DIR . 'includes/helpers.php';
 		}
@@ -97,9 +111,6 @@ class BlogsHQ {
 
 	/**
 	 * Define the locale for this plugin for internationalization.
-	 *
-	 * @since  1.0.0
-	 * @access private
 	 */
 	private function set_locale() {
 		$plugin_i18n = new BlogsHQ_I18n();
@@ -108,72 +119,54 @@ class BlogsHQ {
 
 	/**
 	 * Register all hooks related to the admin area functionality.
-	 *
-	 * @since  1.0.0
-	 * @access private
 	 */
 	private function define_admin_hooks() {
 		$plugin_admin = new BlogsHQ_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		// Enqueue admin styles and scripts
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
-		// Register admin menu
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_plugin_admin_menu' );
-
-		// Add settings link on plugin page
 		$this->loader->add_filter( 'plugin_action_links_' . BLOGSHQ_BASENAME, $plugin_admin, 'add_action_links' );
 	}
 
 	/**
-	 * Register all hooks related to the public-facing functionality.
-	 *
-	 * @since  1.0.0
-	 * @access private
+	 * Register all hooks for plugin modules.
 	 */
-	private function define_public_hooks() {
-		// Enqueue public styles and scripts
-		$this->loader->add_action( 'wp_enqueue_scripts', $this, 'enqueue_public_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $this, 'enqueue_public_scripts' );
+	private function define_module_hooks() {
+		if ( class_exists( 'BlogsHQ_Logos' ) ) {
+			$this->modules['logos'] = new BlogsHQ_Logos();
+			$this->loader->add_action( 'init', $this->modules['logos'], 'init' );
+		}
+
+		if ( class_exists( 'BlogsHQ_TOC' ) ) {
+			$this->modules['toc'] = new BlogsHQ_TOC();
+			$this->loader->add_action( 'init', $this->modules['toc'], 'init' );
+		}
+
+		if ( class_exists( 'BlogsHQ_FAQ_Block' ) ) {
+			$this->modules['faq'] = new BlogsHQ_FAQ_Block();
+			$this->loader->add_action( 'init', $this->modules['faq'], 'init' );
+		}
+
+		if ( class_exists( 'BlogsHQ_AI_Share' ) ) {
+			$this->modules['ai_share'] = new BlogsHQ_AI_Share();
+			$this->loader->add_action( 'init', $this->modules['ai_share'], 'init' );
+		}
 	}
 
 	/**
-	 * Register all hooks for plugin modules.
-	 *
-	 * @since  1.0.0
-	 * @access private
+	 * Register all hooks related to the public-facing functionality.
 	 */
-	private function define_module_hooks() {
-		// Logo Module
-		if ( class_exists( 'BlogsHQ_Logos' ) ) {
-			$logos_module = new BlogsHQ_Logos();
-			$this->loader->add_action( 'init', $logos_module, 'init' );
-		}
+	private function define_public_hooks() {
+		$this->loader->add_action( 'wp_enqueue_scripts', $this, 'enqueue_public_styles', 20 );
 
-		// TOC Module
-		if ( class_exists( 'BlogsHQ_TOC' ) ) {
-			$toc_module = new BlogsHQ_TOC();
-			$this->loader->add_action( 'init', $toc_module, 'init' );
-		}
-
-		// FAQ Module
-		if ( class_exists( 'BlogsHQ_FAQ_Block' ) ) {
-			$faq_module = new BlogsHQ_FAQ_Block();
-			$this->loader->add_action( 'init', $faq_module, 'init' );
-		}
-
-		// AI Share Module
-		if ( class_exists( 'BlogsHQ_AI_Share' ) ) {
-			$ai_share_module = new BlogsHQ_AI_Share();
-			$this->loader->add_action( 'init', $ai_share_module, 'init' );
+		if ( isset( $this->modules['toc'] ) ) {
+			$this->loader->add_filter( 'the_content', $this->modules['toc'], 'insert_toc_and_anchors', 5 );
 		}
 	}
 
 	/**
 	 * Enqueue public-facing stylesheets.
-	 *
-	 * @since 1.0.0
 	 */
 	public function enqueue_public_styles() {
 		wp_enqueue_style(
@@ -187,8 +180,6 @@ class BlogsHQ {
 
 	/**
 	 * Enqueue public-facing JavaScript.
-	 *
-	 * @since 1.0.0
 	 */
 	public function enqueue_public_scripts() {
 	
@@ -196,8 +187,6 @@ class BlogsHQ {
 
 	/**
 	 * Run the loader to execute all hooks.
-	 *
-	 * @since 1.0.0
 	 */
 	public function run() {
 		$this->loader->run();
@@ -206,8 +195,7 @@ class BlogsHQ {
 	/**
 	 * The name of the plugin used to uniquely identify it.
 	 *
-	 * @since  1.0.0
-	 * @return string The name of the plugin.
+	 * @return string
 	 */
 	public function get_plugin_name() {
 		return $this->plugin_name;
@@ -216,8 +204,7 @@ class BlogsHQ {
 	/**
 	 * The reference to the class that orchestrates the hooks.
 	 *
-	 * @since  1.0.0
-	 * @return BlogsHQ_Loader Orchestrates the hooks of the plugin.
+	 * @return BlogsHQ_Loader
 	 */
 	public function get_loader() {
 		return $this->loader;
@@ -226,8 +213,7 @@ class BlogsHQ {
 	/**
 	 * Retrieve the version number of the plugin.
 	 *
-	 * @since  1.0.0
-	 * @return string The version number of the plugin.
+	 * @return string
 	 */
 	public function get_version() {
 		return $this->version;
