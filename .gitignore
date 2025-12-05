@@ -8,7 +8,7 @@
 node_modules/
 package-lock.json
 
-# Composer (keep composer.json, ignore vendor if using)
+# Composer
 vendor/
 
 # Keep lib folder for Plugin Update Checker
@@ -17,8 +17,19 @@ vendor/
 
 # Build/output
 dist/
-build/
 *.log
 
 # Tests
 tests/
+
+# Release builds (optional - if you want to exclude local builds)
+*.zip
+
+# Local WordPress environment
+wp-content/
+wp-config.php
+wp-admin/
+wp-includes/
+
+# Compiled/minified files are kept in repo for direct GitHub installs
+# But source files should be tracked

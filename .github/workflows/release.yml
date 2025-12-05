@@ -17,6 +17,22 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+      
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
+          composer install --no-dev --optimize-autoloader
+      
       - name: Create plugin ZIP
         run: |
           # Create clean directory for ZIP
@@ -39,7 +55,16 @@ jobs:
             --exclude 'postcss.config.js' \
             --exclude '.wp-env.json' \
             --exclude 'wp-cli.yml' \
-            --exclude 'scripts'
+            --exclude 'scripts' \
+            --exclude 'CONTRIBUTING.md' \
+            --exclude 'SECURITY.md' \
+            --exclude 'README.md' \
+            --exclude 'blocks/faq/src' \
+            --exclude 'admin/css/admin.css' \
+            --exclude 'assets/css/frontend.css' \
+            --exclude 'assets/js/link-icon.js' \
+            --exclude 'assets/js/ai-share.js' \
+            --exclude 'admin/js/admin.js'
           
           # Create ZIP from package directory
           cd ../package
