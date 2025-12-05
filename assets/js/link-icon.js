@@ -148,28 +148,91 @@
         return iconsAdded;
     }
 
+    /**
+     * Smooth scroll to target element with offset
+     */
+    function smoothScrollToElement(targetId) {
+        var target = document.getElementById(targetId);
+        
+        if (!target) {
+            return false;
+        }
+
+        // Get the offset (80px as defined in CSS scroll-padding-top)
+        var offset = 80;
+        var targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+
+        return true;
+    }
+
+    /**
+     * Add smooth scroll to TOC links and update URL
+     */
     function addSmoothScrollToTOC() {
         var tocLinks = document.querySelectorAll('.blogshq-toc a[href^="#"]');
         
         tocLinks.forEach(function(link) {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                var targetId = this.getAttribute('href').substring(1);
-                var target = document.getElementById(targetId);
                 
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                var targetId = this.getAttribute('href').substring(1);
+                
+                // Update URL hash without jumping
+                if (history.pushState) {
+                    history.pushState(null, null, '#' + targetId);
+                } else {
+                    // Fallback for older browsers
+                    window.location.hash = targetId;
                 }
+                
+                // Smooth scroll to target
+                smoothScrollToElement(targetId);
             });
         });
+    }
+
+    /**
+     * Handle page load with hash in URL
+     */
+    function handleHashOnLoad() {
+        // Check if there's a hash in the URL
+        var hash = window.location.hash;
+        
+        if (hash && hash.length > 1) {
+            // Remove the # from the hash
+            var targetId = hash.substring(1);
+            
+            // Wait a bit for the page to fully render
+            setTimeout(function() {
+                smoothScrollToElement(targetId);
+            }, 100);
+        }
+    }
+
+    /**
+     * Handle browser back/forward buttons
+     */
+    function handleHashChange() {
+        var hash = window.location.hash;
+        
+        if (hash && hash.length > 1) {
+            var targetId = hash.substring(1);
+            smoothScrollToElement(targetId);
+        }
     }
 
     function init() {
         addIconsToHeadings();
         addSmoothScrollToTOC();
+        handleHashOnLoad();
+        
+        // Listen for hash changes (back/forward navigation)
+        window.addEventListener('hashchange', handleHashChange);
     }
 
     if (document.readyState === 'loading') {
