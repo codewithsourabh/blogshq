@@ -25,14 +25,6 @@ cd wp-content/plugins
 git clone https://github.com/codewithsourabh/blogshq.git blogshq-admin-toolkit
 cd blogshq-admin-toolkit
 composer install --no-dev
-```
-
-## Automatic Updates
-
-Once installed, the plugin automatically checks for updates from GitHub:
-- Updates appear in WordPress Admin → Dashboard → Updates
-- One-click update process
-- Secure delivery via GitHub releases
 
 ## Requirements
 

@@ -3,7 +3,7 @@
  * Plugin Name:       BlogsHQ Admin Toolkit
  * Plugin URI:        https://github.com/codewithsourabh/blogshq
  * Description:       Comprehensive admin tools for BlogsHQ including category logos, TOC, FAQ blocks, and AI share functionality.
- * Version: 1.2.2
+ * Version:           1.2.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Sourabh
@@ -12,7 +12,6 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       blogshq
  * Domain Path:       /languages
- * Update URI:        https://github.com/codewithsourabh/blogshq
  *
  * @package BlogsHQ
  * @link    https://blogshq.com
@@ -66,28 +65,6 @@ define( 'BLOGSHQ_MIN_PHP_VERSION', '7.4' );
  * Minimum required WordPress version.
  */
 define( 'BLOGSHQ_MIN_WP_VERSION', '5.8' );
-
-require_once BLOGSHQ_PLUGIN_DIR . 'lib/plugin-update-checker/plugin-update-checker.php';
-
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-
-/**
- * Initialize GitHub Updates
- */
-function blogshq_init_github_updater() {
-	$update_checker = PucFactory::buildUpdateChecker(
-		'https://github.com/codewithsourabh/blogshq/',
-		__FILE__,
-		'blogshq-admin-toolkit'
-	);
-	
-	$update_checker->setBranch( 'master' );
-	$update_checker->getVcsApi()->enableReleaseAssets();
-}
-
-if ( class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
-	add_action( 'plugins_loaded', 'blogshq_init_github_updater' );
-}
 
 /**
  * Check PHP and WordPress versions before loading plugin.
